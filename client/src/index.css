@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #FFFFFF;
+    color: #0A0A0A;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-thunder {
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  /* Prevent iOS input auto-zoom on mobile viewports (< 640px) */
+  @media (max-width: 639px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="number"],
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+}
+
+/* Global mobile overflow prevention & word wrapping */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  touch-action: manipulation;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00A3FF;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0066FF;
+}
+
+/* Text Accent Gradient Utility */
+.text-gradient {
+  background: linear-gradient(135deg, #FF7A30 0%, #FFB347 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-orange {
+  background: linear-gradient(135deg, #FF7A30 0%, #FFB347 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-blue {
+  background: linear-gradient(135deg, #00A3FF 0%, #0066FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Border Gradient Utility */
+.border-sunset-glow {
+  border-image: linear-gradient(to right, #00A3FF, #0066FF) 1;
+}
+
+/* Accessible Reduced Motion Overrides */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .gsap-pin-fallback {
+    position: relative !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
