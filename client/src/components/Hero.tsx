@@ -68,7 +68,7 @@ export const Hero: React.FC = () => {
     <section
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="relative w-full min-h-[70vh] sm:min-h-[75vh] md:min-h-[80vh] overflow-hidden bg-white flex items-center justify-center pt-20 pb-12 sm:pt-16 sm:pb-10"
+      className="relative w-full min-h-[85vh] sm:min-h-[88vh] md:min-h-[90vh] lg:min-h-[92vh] overflow-hidden bg-white flex items-center justify-center py-16 sm:py-20 md:py-24"
       aria-label="Hero Section"
     >
       {/* Background Slideshow: Stacked Image Layers */}
@@ -105,23 +105,6 @@ export const Hero: React.FC = () => {
       {/* Hero Main Content */}
       <div className="relative z-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-center w-full pointer-events-auto">
         
-        {/* Official Logo Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center space-x-2 px-3 sm:px-4 py-1.5 rounded-full bg-white/95 border border-[#FF7A30]/40 backdrop-blur-md mb-3 sm:mb-4 shadow-md max-w-full"
-        >
-          <img
-            src="/images/logo.png"
-            alt="Official Logo"
-            className="w-5 h-5 sm:w-7 sm:h-7 object-contain flex-shrink-0"
-          />
-          <span className="text-[9px] xs:text-[10px] sm:text-xs md:text-sm font-extrabold tracking-wider text-[#0A0A0A] uppercase truncate max-w-[260px] xs:max-w-none">
-            Official Coastal Marathon & Marine Preservation
-          </span>
-        </motion.div>
-
         {/* Display Headline */}
         <h1 className="font-thunder text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl leading-[0.98] tracking-wide text-[#0A0A0A] uppercase text-center font-extrabold drop-shadow-xs max-w-full overflow-hidden">
           {titleWords.map((word, wordIdx) => (
@@ -161,22 +144,7 @@ export const Hero: React.FC = () => {
           <span className="font-black text-black bg-white px-2 py-0.5 border border-slate-400 shadow-sm inline-block my-0.5">Kapu Light House</span>.
         </motion.p>
 
-        {/* Info Meta Pills */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.7 }}
-          className="mt-4 sm:mt-5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 text-xs sm:text-sm text-[#0A0A0A] font-extrabold"
-        >
-          <div className="inline-flex items-center justify-center space-x-2 px-4 py-2 bg-white border border-[#FF7A30]/40 shadow-sm">
-            <Calendar className="w-4 h-4 text-[#FF7A30] flex-shrink-0" />
-            <span className="text-[11px] sm:text-xs md:text-sm font-extrabold whitespace-nowrap text-[#0A0A0A]">6TH DECEMBER 2026 • 5:30 AM – 10:00 AM</span>
-          </div>
-          <div className="inline-flex items-center justify-center space-x-2 px-4 py-2 bg-white border border-[#FF7A30]/40 shadow-sm">
-            <MapPin className="w-4 h-4 text-[#FF7A30] flex-shrink-0" />
-            <span className="text-[11px] sm:text-xs md:text-sm font-extrabold whitespace-nowrap text-[#0A0A0A]">PADUKERE TO KAPU LIGHT HOUSE, UDUPI</span>
-          </div>
-        </motion.div>
+
 
         {/* Registration CTA Button */}
         <motion.div

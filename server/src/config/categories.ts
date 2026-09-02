@@ -23,27 +23,27 @@ export const CATEGORIES: Record<string, CategoryConfig> = {
     id: "3k_fun",
     name: "3K Fun Run",
     distance: "3 Kilometers",
-    priceINR: 0, // Free registration
-    isFree: true,
+    priceINR: 399,
+    isFree: false,
     description: "Padukere Ground ➔ Padukare School Ground (3K). Kids & Senior Citizens walk/run.",
-    eligibility: "Open to children (<14 yrs) & senior citizens (60+ yrs)",
+    eligibility: "Open to beginners, children & families",
     flagOffTime: "7:00 AM"
   },
   "1k_3k_fun": {
     id: "3k_fun",
     name: "3K Fun Run",
     distance: "3 Kilometers",
-    priceINR: 0, // Free registration
-    isFree: true,
+    priceINR: 399,
+    isFree: false,
     description: "Padukere Ground ➔ Padukare School Ground (3K). Kids & Senior Citizens walk/run.",
-    eligibility: "Open to children (<14 yrs) & senior citizens (60+ yrs)",
+    eligibility: "Open to beginners, children & families",
     flagOffTime: "7:00 AM"
   },
   "5k": {
     id: "5k",
-    name: "5K Coastal Challenge",
+    name: "5K Run",
     distance: "5 Kilometers",
-    priceINR: 499, // TBD PLACEHOLDER — UPDATE BEFORE LAUNCH
+    priceINR: 599,
     isFree: false,
     description: "Padukere Ground ➔ Blue Wave (5K). Scenic coastal challenge for fitness enthusiasts.",
     eligibility: "Age 12 and above",
@@ -51,9 +51,9 @@ export const CATEGORIES: Record<string, CategoryConfig> = {
   },
   "10k": {
     id: "10k",
-    name: "10K Endurance Run",
+    name: "10K Run",
     distance: "10 Kilometers",
-    priceINR: 799, // TBD PLACEHOLDER — UPDATE BEFORE LAUNCH
+    priceINR: 799,
     isFree: false,
     description: "Padukere Ground ➔ Mattu Beach (10K). Mid-distance timed beach run.",
     eligibility: "Age 16 and above",
@@ -61,9 +61,9 @@ export const CATEGORIES: Record<string, CategoryConfig> = {
   },
   "15k": {
     id: "15k",
-    name: "15K Ultimate Beach Marathon",
+    name: "15K Run",
     distance: "15 Kilometers",
-    priceINR: 999, // TBD PLACEHOLDER — UPDATE BEFORE LAUNCH
+    priceINR: 999,
     isFree: false,
     description: "Padukere Ground ➔ Kapu Light House (15K). Full coastal course challenge.",
     eligibility: "Age 18 and above",

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown, Phone, Mail } from 'lucide-react';
 
 interface NavbarProps {
   currentView?: 'home' | 'blog' | 'gallery' | 'route-map';
@@ -43,10 +43,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView = 'home', onNavigate
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/95 backdrop-blur-md border-b border-slate-200 py-3 shadow-md'
-          : 'bg-white/90 backdrop-blur-md border-b border-slate-100 py-3.5 shadow-sm'
+          ? 'bg-white border-b border-slate-200 py-3 shadow-md'
+          : 'bg-white border-b border-slate-100 py-3.5 shadow-sm'
       }`}
     >
       <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -59,12 +59,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView = 'home', onNavigate
               onNavigate('home');
             }
           }}
-          className="flex items-center group flex-shrink-0"
+          className="flex items-center group flex-shrink-0 py-1"
         >
           <img
             src="/images/header-logo.png"
             alt="Udupipages Beach Run 2026"
-            className="h-10 sm:h-11 md:h-12 w-auto object-contain transition-transform group-hover:scale-105"
+            className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain mix-blend-multiply transition-transform group-hover:scale-105"
           />
         </a>
 
@@ -78,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView = 'home', onNavigate
           >
             <button
               onClick={() => setAboutDropdownOpen(!aboutDropdownOpen)}
-              className={`flex items-center text-xs xl:text-sm font-extrabold transition-colors uppercase tracking-wider whitespace-nowrap py-1 ${
+              className={`flex items-center text-sm xl:text-base font-extrabold transition-colors uppercase tracking-wider whitespace-nowrap py-1 ${
                 aboutDropdownOpen || currentView === 'gallery'
                   ? 'text-[#FF7A30]'
                   : 'text-[#0A0A0A]/90 hover:text-[#FF7A30]'
@@ -141,7 +141,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView = 'home', onNavigate
               key={link.name}
               href={link.href}
               onClick={(e) => handleLinkClick(e, link)}
-              className={`text-xs xl:text-sm font-extrabold transition-colors uppercase tracking-wider whitespace-nowrap ${
+              className={`text-sm xl:text-base font-extrabold transition-colors uppercase tracking-wider whitespace-nowrap ${
                 (currentView === 'blog' && link.view === 'blog') ||
                 (currentView === 'route-map' && link.view === 'route-map')
                   ? 'text-[#FF7A30]'
@@ -153,12 +153,25 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView = 'home', onNavigate
           ))}
         </nav>
 
-        {/* Action Button & Event Tag */}
-        <div className="hidden sm:flex items-center space-x-3 lg:space-x-4 flex-shrink-0">
-          <div className="hidden xl:flex items-center text-xs text-slate-700 space-x-3 border-r border-slate-200 pr-4 whitespace-nowrap">
-            <span className="flex items-center font-bold"><Calendar className="w-3.5 h-3.5 text-[#FF7A30] mr-1" /> DEC 6 • 5:30 AM</span>
-            <span className="flex items-center font-bold"><MapPin className="w-3.5 h-3.5 text-[#FF7A30] mr-1" /> UDUPI</span>
+        {/* Action Button & Contact Info */}
+        <div className="hidden sm:flex items-center space-x-3 xl:space-x-4 flex-shrink-0">
+          <div className="hidden md:flex flex-col items-end justify-center text-right leading-tight pr-1">
+            <a
+              href="tel:9180323209"
+              className="flex items-center space-x-1.5 text-base lg:text-lg font-black text-[#0A0A0A] hover:text-[#FF7A30] transition-colors tracking-wide"
+            >
+              <Phone className="w-4 h-4 text-[#FF7A30]" />
+              <span>9180323209</span>
+            </a>
+            <a
+              href="mailto:udupipages@gmail.com"
+              className="flex items-center space-x-1.5 text-xs lg:text-sm font-bold text-slate-800 hover:text-[#FF7A30] transition-colors mt-0.5"
+            >
+              <Mail className="w-3.5 h-3.5 text-[#FF7A30]" />
+              <span>udupipages@gmail.com</span>
+            </a>
           </div>
+
           <a
             href="#register"
             onClick={(e) => {
@@ -245,6 +258,18 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView = 'home', onNavigate
               {link.name}
             </a>
           ))}
+
+          {/* Mobile Contact Info */}
+          <div className="flex flex-col space-y-2 pt-2 border-t border-slate-100 text-xs font-extrabold text-[#0A0A0A]">
+            <a href="tel:9180323209" className="flex items-center space-x-2 text-slate-800 hover:text-[#FF7A30]">
+              <Phone className="w-3.5 h-3.5 text-[#FF7A30]" />
+              <span>9180323209</span>
+            </a>
+            <a href="mailto:udupipages@gmail.com" className="flex items-center space-x-2 text-slate-800 hover:text-[#FF7A30]">
+              <Mail className="w-3.5 h-3.5 text-[#FF7A30]" />
+              <span>udupipages@gmail.com</span>
+            </a>
+          </div>
 
           <a
             href="#register"

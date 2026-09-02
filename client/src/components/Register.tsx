@@ -11,17 +11,17 @@ const categories: Category[] = [
     id: '3k_fun',
     name: '3K FUN RUN',
     distance: '3 Kilometers',
-    priceINR: 0,
-    isFree: true,
+    priceINR: 399,
+    isFree: false,
     description: 'Padukere Ground ➔ Padukare School Ground (3K). Kids & Senior Citizens walk/run.',
-    eligibility: 'Kids & Senior Citizens',
+    eligibility: 'Kids, Beginners & Families',
     flagOffTime: '7:00 AM'
   },
   {
     id: '5k',
-    name: '5K COASTAL CHALLENGE',
+    name: '5K RUN',
     distance: '5 Kilometers',
-    priceINR: 499,
+    priceINR: 599,
     isFree: false,
     description: 'Padukere Ground ➔ Blue Wave (5K). Scenic beach run for fitness enthusiasts.',
     eligibility: 'Age 12 and above',
@@ -29,7 +29,7 @@ const categories: Category[] = [
   },
   {
     id: '10k',
-    name: '10K ENDURANCE RUN',
+    name: '10K RUN',
     distance: '10 Kilometers',
     priceINR: 799,
     isFree: false,
@@ -39,7 +39,7 @@ const categories: Category[] = [
   },
   {
     id: '15k',
-    name: '15K ULTIMATE MARATHON',
+    name: '15K RUN',
     distance: '15 Kilometers',
     priceINR: 999,
     isFree: false,
@@ -246,7 +246,7 @@ export const Register: React.FC = () => {
             OFFICIAL REGISTRATION PORTAL
           </span>
           <h2 className="font-thunder text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#0A0A0A] uppercase leading-tight tracking-wide">
-            CLAIM YOUR STARTING LINE
+            Register UdupiPages Beach Run
           </h2>
           <p className="text-xs sm:text-base text-slate-700 font-normal max-w-2xl mx-auto">
             Select your distance category below to secure your bib for 6th December 2026.

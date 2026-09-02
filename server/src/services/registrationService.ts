@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase.js';
+import { randomUUID } from 'crypto';
 
 export interface RegistrationRecord {
   id: string;
@@ -48,7 +49,7 @@ export class RegistrationService {
     isFree: boolean;
     razorpayOrderId?: string;
   }): Promise<RegistrationRecord> {
-    const id = `reg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const id = randomUUID();
     const registrationNumber = this.generateRegistrationNumber();
     const status = data.isFree ? 'FREE' : 'PENDING';
     const createdAt = new Date().toISOString();

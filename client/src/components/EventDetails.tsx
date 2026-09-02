@@ -115,64 +115,6 @@ export const EventDetails: React.FC = () => {
           </div>
         </div>
 
-        {/* Visual Categories Overview Row */}
-        <div className="bg-white border border-slate-200 p-8 shadow-md">
-          <div className="flex items-center space-x-3 mb-6">
-            <Award className="w-6 h-6 text-[#00A3FF]" />
-            <h3 className="font-thunder text-2xl text-[#0A0A0A]">RACE CATEGORIES</h3>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-50 p-5 border-l-4 border-[#FF7A30] border border-slate-200 flex flex-col justify-between">
-              <div>
-                <span className="text-xs text-[#FF7A30] font-extrabold tracking-wider uppercase">FUN RUN</span>
-                <h4 className="font-thunder text-sm sm:text-base md:text-lg font-extrabold text-[#0A0A0A] tracking-tight leading-snug mt-0.5">3K FUN RUN</h4>
-                <p className="text-xs text-slate-800 font-semibold mt-1">Padukere Ground ➔ Padukare School</p>
-                <p className="text-[11px] text-slate-600 mt-0.5">Kids & Senior Citizens Walk/Run</p>
-              </div>
-              <span className="inline-block mt-3 px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-bold uppercase border border-emerald-300 w-fit">
-                FREE ENTRY
-              </span>
-            </div>
-
-            <div className="bg-slate-50 p-5 border-l-4 border-[#FF7A30] border border-slate-200 flex flex-col justify-between">
-              <div>
-                <span className="text-xs text-[#FF7A30] font-extrabold tracking-wider uppercase">SPEED RUN</span>
-                <h4 className="font-thunder text-sm sm:text-base md:text-lg font-extrabold text-[#0A0A0A] tracking-tight leading-snug mt-0.5">5K COASTAL CHALLENGE</h4>
-                <p className="text-xs text-slate-800 font-semibold mt-1">Padukere Ground ➔ Blue Wave</p>
-                <p className="text-[11px] text-slate-600 mt-0.5">Fitness enthusiasts & beginners</p>
-              </div>
-              <span className="inline-block mt-3 px-2 py-0.5 bg-amber-100 text-[#FF7A30] text-xs font-bold uppercase border border-amber-300 w-fit">
-                ₹499 INR
-              </span>
-            </div>
-
-            <div className="bg-slate-50 p-5 border-l-4 border-[#FF7A30] border border-slate-200 flex flex-col justify-between">
-              <div>
-                <span className="text-xs text-[#FF7A30] font-extrabold tracking-wider uppercase">ENDURANCE</span>
-                <h4 className="font-thunder text-sm sm:text-base md:text-lg font-extrabold text-[#0A0A0A] tracking-tight leading-snug mt-0.5">10K ENDURANCE RUN</h4>
-                <p className="text-xs text-slate-800 font-semibold mt-1">Padukere Ground ➔ Mattu Beach</p>
-                <p className="text-[11px] text-slate-600 mt-0.5">Timed distance challenge</p>
-              </div>
-              <span className="inline-block mt-3 px-2 py-0.5 bg-amber-100 text-[#FF7A30] text-xs font-bold uppercase border border-amber-300 w-fit">
-                ₹799 INR
-              </span>
-            </div>
-
-            <div className="bg-slate-50 p-5 border-l-4 border-[#FF7A30] border border-slate-200 flex flex-col justify-between">
-              <div>
-                <span className="text-xs text-[#FF7A30] font-extrabold tracking-wider uppercase">ULTIMATE</span>
-                <h4 className="font-thunder text-sm sm:text-base md:text-lg font-extrabold text-[#0A0A0A] tracking-tight leading-snug mt-0.5">15K ULTIMATE MARATHON</h4>
-                <p className="text-xs text-slate-800 font-semibold mt-1">Padukere Ground ➔ Kapu Light House</p>
-                <p className="text-[11px] text-slate-600 mt-0.5">Full 15K coastal marathon course</p>
-              </div>
-              <span className="inline-block mt-3 px-2 py-0.5 bg-amber-100 text-[#FF7A30] text-xs font-bold uppercase border border-amber-300 w-fit">
-                ₹999 INR
-              </span>
-            </div>
-          </div>
-        </div>
-
       </div>
     </section>
   );
