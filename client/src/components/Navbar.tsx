@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, Phone, Mail } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 interface NavbarProps {
   currentView?: 'home' | 'blog' | 'gallery' | 'route-map';
@@ -8,28 +8,32 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ currentView = 'home', onNavigate }) => {
-  const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
-  const [mobileAboutOpen, setMobileAboutOpen] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
+      setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'Objectives', href: '#objectives', sectionId: 'objectives' },
-    { name: 'Route Map', href: '#route', view: 'route-map' as const },
-    { name: 'Register', href: '#register', sectionId: 'register' },
-    { name: 'News & Blog', href: '#news', view: 'blog' as const },
-    { name: 'FAQ', href: '#faq', sectionId: 'faq' },
+  const navItems = [
+    { name: 'The Run', sectionId: 'about', href: '#about' },
+    { name: 'Race Categories', sectionId: 'races', href: '#races' },
+    { name: 'Route', sectionId: 'route', view: 'route-map' as const, href: '#route' },
+    { name: 'Objectives', sectionId: 'objectives', href: '#objectives' },
+    { name: 'Gallery', sectionId: 'gallery', view: 'gallery' as const, href: '#gallery' },
+    { name: 'News & Blog', sectionId: 'news', view: 'blog' as const, href: '#news' },
+    { name: 'FAQs', sectionId: 'faq', href: '#faq' },
   ];
 
-  const handleLinkClick = (e: React.MouseEvent, item: { view?: 'home' | 'blog' | 'gallery' | 'route-map'; sectionId?: string }) => {
+  const handleNavClick = (
+    e: React.MouseEvent,
+    item: { sectionId?: string; view?: 'home' | 'blog' | 'gallery' | 'route-map'; href: string }
+  ) => {
+    setMobileMenuOpen(false);
     if (onNavigate) {
       if (item.view) {
         e.preventDefault();
@@ -37,6 +41,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView = 'home', onNavigate
       } else if (currentView !== 'home') {
         e.preventDefault();
         onNavigate('home', item.sectionId);
+      } else if (item.sectionId) {
+        e.preventDefault();
+        const el = document.getElementById(item.sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          window.location.hash = item.sectionId;
+        }
       }
     }
   };
@@ -45,247 +57,107 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView = 'home', onNavigate
     <header
       className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white border-b border-slate-200 py-3 shadow-md'
-          : 'bg-white border-b border-slate-100 py-3.5 shadow-sm'
+          ? 'bg-[#fffffff5] backdrop-blur-md shadow-md border-b border-slate-200/80'
+          : 'bg-[#fffffff2] backdrop-blur-sm border-b border-slate-100'
       }`}
     >
-      <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        {/* Left Aligned Brand Logo */}
+      <div className="c nav w-[92%] max-w-[1180px] mx-auto h-[80px] flex items-center justify-between">
+        {/* Brand Logo */}
         <a
-          href="#home"
+          href="#run"
           onClick={(e) => {
             if (onNavigate) {
               e.preventDefault();
-              onNavigate('home');
+              if (currentView !== 'home') {
+                onNavigate('home');
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
             }
           }}
-          className="flex items-center group flex-shrink-0 py-1"
+          className="logo flex gap-[9px] items-center font-black text-[#062b63] no-underline group"
         >
           <img
             src="/images/header-logo.png"
             alt="Udupipages Beach Run 2026"
-            className="h-12 sm:h-14 md:h-16 lg:h-20 w-auto object-contain mix-blend-multiply transition-transform group-hover:scale-105"
+            className="h-12 sm:h-14 md:h-16 w-auto object-contain transition-transform group-hover:scale-105"
           />
         </a>
 
-        {/* Desktop Nav Links */}
-        <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6 flex-shrink">
-          {/* ABOUT Dropdown */}
-          <div
-            className="relative"
-            onMouseEnter={() => setAboutDropdownOpen(true)}
-            onMouseLeave={() => setAboutDropdownOpen(false)}
-          >
-            <button
-              onClick={() => setAboutDropdownOpen(!aboutDropdownOpen)}
-              className={`flex items-center text-sm xl:text-base font-extrabold transition-colors uppercase tracking-wider whitespace-nowrap py-1 ${
-                aboutDropdownOpen || currentView === 'gallery'
-                  ? 'text-[#FF7A30]'
-                  : 'text-[#0A0A0A]/90 hover:text-[#FF7A30]'
-              }`}
-            >
-              <span>ABOUT</span>
-              <ChevronDown className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 ${aboutDropdownOpen ? 'rotate-180 text-[#FF7A30]' : ''}`} />
-            </button>
-
-            {/* Dropdown Menu Panel */}
-            <AnimatePresence>
-              {aboutDropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.18 }}
-                  className="absolute top-full left-0 mt-1 w-52 bg-white border border-slate-200 shadow-xl py-2 z-50"
-                >
-                  <a
-                    href="#about"
-                    onClick={(e) => {
-                      setAboutDropdownOpen(false);
-                      handleLinkClick(e, { sectionId: 'about' });
-                    }}
-                    className="block px-4 py-2.5 text-xs font-extrabold text-[#0A0A0A] hover:bg-amber-50 hover:text-[#FF7A30] uppercase border-b border-slate-100 transition-colors"
-                  >
-                    About Event
-                  </a>
-                  <a
-                    href="#details"
-                    onClick={(e) => {
-                      setAboutDropdownOpen(false);
-                      handleLinkClick(e, { sectionId: 'details' });
-                    }}
-                    className="block px-4 py-2.5 text-xs font-extrabold text-[#0A0A0A] hover:bg-amber-50 hover:text-[#FF7A30] uppercase border-b border-slate-100 transition-colors"
-                  >
-                    Event Details
-                  </a>
-                  <a
-                    href="#gallery"
-                    onClick={(e) => {
-                      setAboutDropdownOpen(false);
-                      handleLinkClick(e, { view: 'gallery' });
-                    }}
-                    className={`block px-4 py-2.5 text-xs font-extrabold uppercase transition-colors ${
-                      currentView === 'gallery' ? 'text-[#FF7A30] bg-amber-50' : 'text-[#0A0A0A] hover:bg-amber-50 hover:text-[#FF7A30]'
-                    }`}
-                  >
-                    Photo Gallery
-                  </a>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Other Nav Links */}
-          {navLinks.map((link) => (
+        {/* Desktop Menu */}
+        <nav className="menu hidden lg:flex gap-[22px] items-center text-[12px] font-extrabold uppercase tracking-wider text-[#062b63]">
+          {navItems.map((item) => (
             <a
-              key={link.name}
-              href={link.href}
-              onClick={(e) => handleLinkClick(e, link)}
-              className={`text-sm xl:text-base font-extrabold transition-colors uppercase tracking-wider whitespace-nowrap ${
-                (currentView === 'blog' && link.view === 'blog') ||
-                (currentView === 'route-map' && link.view === 'route-map')
-                  ? 'text-[#FF7A30]'
-                  : 'text-[#0A0A0A]/90 hover:text-[#FF7A30]'
+              key={item.name}
+              href={item.href}
+              onClick={(e) => handleNavClick(e, item)}
+              className={`hover:text-[#f5661b] transition-colors py-2 whitespace-nowrap ${
+                (currentView === 'blog' && item.view === 'blog') ||
+                (currentView === 'gallery' && item.view === 'gallery') ||
+                (currentView === 'route-map' && item.view === 'route-map')
+                  ? 'text-[#f5661b] font-black border-b-2 border-[#f5661b]'
+                  : 'text-[#062b63]'
               }`}
             >
-              {link.name}
+              {item.name}
             </a>
           ))}
+
+          {/* CTA Register Button */}
+          <a
+            className="btn inline-block bg-[#f5661b] text-white px-[22px] py-[13px] rounded-[7px] font-black uppercase text-[12px] tracking-wider hover:bg-[#e0550d] hover:scale-105 active:scale-95 transition-all shadow-md ml-2 whitespace-nowrap"
+            href="#register"
+            onClick={(e) =>
+              handleNavClick(e, { sectionId: 'register', href: '#register' })
+            }
+          >
+            Register Now
+          </a>
         </nav>
 
-        {/* Action Button & Contact Info */}
-        <div className="hidden sm:flex items-center space-x-3 xl:space-x-4 flex-shrink-0">
-          <div className="hidden md:flex flex-col items-end justify-center text-right leading-tight pr-1">
-            <a
-              href="tel:9180323209"
-              className="flex items-center space-x-1.5 text-base lg:text-lg font-black text-[#0A0A0A] hover:text-[#FF7A30] transition-colors tracking-wide"
-            >
-              <Phone className="w-4 h-4 text-[#FF7A30]" />
-              <span>9180323209</span>
-            </a>
-            <a
-              href="mailto:udupipages@gmail.com"
-              className="flex items-center space-x-1.5 text-xs lg:text-sm font-bold text-slate-800 hover:text-[#FF7A30] transition-colors mt-0.5"
-            >
-              <Mail className="w-3.5 h-3.5 text-[#FF7A30]" />
-              <span>udupipages@gmail.com</span>
-            </a>
-          </div>
-
-          <a
-            href="#register"
-            onClick={(e) => {
-              if (currentView !== 'home' && onNavigate) {
-                e.preventDefault();
-                onNavigate('home', 'register');
-              }
-            }}
-            className="px-4 lg:px-5 py-2 sm:py-2.5 rounded-none font-sans text-xs lg:text-sm tracking-wider bg-sunset-gradient text-white font-extrabold uppercase transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,122,48,0.4)] whitespace-nowrap flex-shrink-0"
-          >
-            REGISTER NOW
-          </a>
-        </div>
-
-        {/* Mobile / Tablet Hamburger Toggle */}
+        {/* Mobile Hamburger Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden p-2 text-[#0A0A0A] hover:text-[#FF7A30] focus:outline-none"
-          aria-label="Toggle Navigation Menu"
+          className="lg:hidden p-2 text-[#062b63] hover:text-[#f5661b] focus:outline-none"
+          aria-label="Toggle navigation menu"
         >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
         </button>
       </div>
 
-      {/* Mobile / Tablet Dropdown Menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-slate-200 px-4 pt-4 pb-6 space-y-3 shadow-xl max-h-[85vh] overflow-y-auto">
-          {/* Mobile ABOUT Dropdown */}
-          <div className="border-b border-slate-100 pb-2">
-            <button
-              onClick={() => setMobileAboutOpen(!mobileAboutOpen)}
-              className="flex items-center justify-between w-full text-sm font-extrabold text-[#0A0A0A] hover:text-[#FF7A30] uppercase py-1"
-            >
-              <span>ABOUT</span>
-              <ChevronDown className={`w-4 h-4 transition-transform ${mobileAboutOpen ? 'rotate-180 text-[#FF7A30]' : ''}`} />
-            </button>
-            {mobileAboutOpen && (
-              <div className="pl-3 space-y-2 pt-2 pb-1 border-l-2 border-[#FF7A30]">
-                <a
-                  href="#about"
-                  onClick={(e) => {
-                    setMobileMenuOpen(false);
-                    handleLinkClick(e, { sectionId: 'about' });
-                  }}
-                  className="block text-xs font-bold text-slate-800 hover:text-[#FF7A30] uppercase py-1"
-                >
-                  • About Event
-                </a>
-                <a
-                  href="#details"
-                  onClick={(e) => {
-                    setMobileMenuOpen(false);
-                    handleLinkClick(e, { sectionId: 'details' });
-                  }}
-                  className="block text-xs font-bold text-slate-800 hover:text-[#FF7A30] uppercase py-1"
-                >
-                  • Event Details
-                </a>
-                <a
-                  href="#gallery"
-                  onClick={(e) => {
-                    setMobileMenuOpen(false);
-                    handleLinkClick(e, { view: 'gallery' });
-                  }}
-                  className="block text-xs font-bold text-slate-800 hover:text-[#FF7A30] uppercase py-1"
-                >
-                  • Photo Gallery
-                </a>
-              </div>
-            )}
-          </div>
-
-          {/* Other Nav Links */}
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              onClick={(e) => {
-                setMobileMenuOpen(false);
-                handleLinkClick(e, link);
-              }}
-              className="block text-sm font-bold text-[#0A0A0A] hover:text-[#FF7A30] uppercase py-1 border-b border-slate-100"
-            >
-              {link.name}
-            </a>
-          ))}
-
-          {/* Mobile Contact Info */}
-          <div className="flex flex-col space-y-2 pt-2 border-t border-slate-100 text-xs font-extrabold text-[#0A0A0A]">
-            <a href="tel:9180323209" className="flex items-center space-x-2 text-slate-800 hover:text-[#FF7A30]">
-              <Phone className="w-3.5 h-3.5 text-[#FF7A30]" />
-              <span>9180323209</span>
-            </a>
-            <a href="mailto:udupipages@gmail.com" className="flex items-center space-x-2 text-slate-800 hover:text-[#FF7A30]">
-              <Mail className="w-3.5 h-3.5 text-[#FF7A30]" />
-              <span>udupipages@gmail.com</span>
-            </a>
-          </div>
-
-          <a
-            href="#register"
-            onClick={(e) => {
-              setMobileMenuOpen(false);
-              if (currentView !== 'home' && onNavigate) {
-                e.preventDefault();
-                onNavigate('home', 'register');
-              }
-            }}
-            className="block text-center w-full py-3 mt-2 bg-sunset-gradient text-white font-sans text-sm tracking-wider font-extrabold uppercase shadow-sm"
+      {/* Mobile Drawer Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="lg:hidden bg-white border-b border-slate-200 px-6 py-5 shadow-xl space-y-3 overflow-hidden"
           >
-            REGISTER NOW
-          </a>
-        </div>
-      )}
+            <div className="flex flex-col space-y-3 text-[13px] font-extrabold uppercase tracking-wider text-[#062b63]">
+              {navItems.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  onClick={(e) => handleNavClick(e, item)}
+                  className="hover:text-[#f5661b] py-2 border-b border-slate-100 transition-colors"
+                >
+                  {item.name}
+                </a>
+              ))}
+              <a
+                className="btn text-center block bg-[#f5661b] text-white px-[22px] py-[13px] rounded-[7px] font-black uppercase text-[13px] tracking-wider mt-3 shadow-md"
+                href="#register"
+                onClick={(e) =>
+                  handleNavClick(e, { sectionId: 'register', href: '#register' })
+                }
+              >
+                Register Now
+              </a>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };

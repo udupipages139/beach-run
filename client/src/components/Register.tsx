@@ -238,6 +238,7 @@ export const Register: React.FC = () => {
 
   return (
     <section id="register" className="py-20 sm:py-28 bg-white text-[#0A0A0A] border-t border-slate-200 relative">
+      <div id="races" className="scroll-mt-28" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
