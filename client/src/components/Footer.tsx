@@ -71,8 +71,8 @@ export const Footer: React.FC = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-[#00A3FF] flex-shrink-0" />
-                <a href="mailto:udupipages@gmail.com" className="hover:text-[#00A3FF] transition-colors">
-                  udupipages@gmail.com
+                <a href="mailto:run@udupibeachrun.com" className="hover:text-[#00A3FF] transition-colors">
+                  run@udupibeachrun.com
                 </a>
               </div>
               <div className="flex items-center space-x-3">
