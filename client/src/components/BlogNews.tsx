@@ -78,12 +78,10 @@ const articles: Article[] = [
 ];
 
 interface BlogNewsProps {
-  onNavigateToBlog?: () => void;
+  onNavigateToBlog?: (articleId?: string) => void;
 }
 
 export const BlogNews: React.FC<BlogNewsProps> = ({ onNavigateToBlog }) => {
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-
   // Display only 3 articles on the grid
   const visibleArticles = articles.slice(0, 3);
 
@@ -110,7 +108,7 @@ export const BlogNews: React.FC<BlogNewsProps> = ({ onNavigateToBlog }) => {
           {visibleArticles.map((art) => (
             <div
               key={art.id}
-              onClick={() => setSelectedArticle(art)}
+              onClick={() => onNavigateToBlog?.(art.id)}
               className="group cursor-pointer bg-slate-50 border border-slate-200 hover:border-[#FF7A30] transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-md"
             >
               <div>
@@ -159,7 +157,7 @@ export const BlogNews: React.FC<BlogNewsProps> = ({ onNavigateToBlog }) => {
         {/* View All Stories Button */}
         <div className="mt-12 text-center">
           <button
-            onClick={() => onNavigateToBlog ? onNavigateToBlog() : setSelectedArticle(articles[3])}
+            onClick={() => onNavigateToBlog?.()}
             className="group relative inline-flex items-center justify-center px-8 py-4 bg-sunset-gradient text-white font-sans text-xs sm:text-sm font-extrabold uppercase tracking-widest shadow-lg hover:scale-105 transition-transform space-x-3 border border-white/20"
           >
             <Newspaper className="w-5 h-5" />
@@ -169,64 +167,6 @@ export const BlogNews: React.FC<BlogNewsProps> = ({ onNavigateToBlog }) => {
         </div>
 
       </div>
-
-      {/* Article Detail Modal */}
-      <AnimatePresence>
-        {selectedArticle && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white border border-slate-200 max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 sm:p-8 space-y-6 relative shadow-2xl"
-            >
-              {/* Close Button */}
-              <button
-                onClick={() => setSelectedArticle(null)}
-                className="absolute top-4 right-4 p-2 text-slate-600 hover:text-black bg-slate-100 border border-slate-300 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <span className="inline-block text-xs font-mono text-[#FF7A30] uppercase font-bold tracking-widest bg-amber-50 px-2.5 py-1 border border-amber-200">
-                {selectedArticle.category}
-              </span>
-
-              <h2 className="font-thunder text-3xl sm:text-4xl font-extrabold text-[#0A0A0A] leading-tight">
-                {selectedArticle.title}
-              </h2>
-
-              <div className="flex items-center justify-between text-xs text-slate-500 border-y border-slate-200 py-3 font-mono">
-                <span>BY {selectedArticle.author.toUpperCase()}</span>
-                <span>{selectedArticle.date} • {selectedArticle.readTime}</span>
-              </div>
-
-              <div className="h-64 w-full overflow-hidden bg-slate-900">
-                <img
-                  src={selectedArticle.image}
-                  alt={selectedArticle.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div className="space-y-4 text-sm sm:text-base text-slate-700 font-normal leading-relaxed">
-                {selectedArticle.content.map((paragraph, idx) => (
-                  <p key={idx}>{paragraph}</p>
-                ))}
-              </div>
-
-              <div className="pt-4 border-t border-slate-200 flex justify-end">
-                <button
-                  onClick={() => setSelectedArticle(null)}
-                  className="px-6 py-2.5 bg-sunset-gradient text-white font-thunder text-sm uppercase font-bold tracking-wider hover:opacity-95"
-                >
-                  CLOSE STORY
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </section>
   );
 };

@@ -6,12 +6,12 @@
   body {
     background-color: #FFFFFF;
     color: #0A0A0A;
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'DM Sans', sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6, .font-thunder {
-    font-family: 'Montserrat', sans-serif;
-    letter-spacing: 0.03em;
+  h1, h2, h3, h4, h5, h6, .font-thunder, .font-display, .font-heading {
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.01em;
     text-transform: uppercase;
   }
   /* Prevent iOS input auto-zoom on mobile viewports (< 640px) */

@@ -84,14 +84,14 @@ export const Hero: React.FC = () => {
         </div>
 
         {/* Hero Copy Content */}
-        <div className="copy max-w-[660px]">
+        <div className="copy max-w-[720px]">
           <div className="ey text-[13px] font-black tracking-[0.14em] text-[#f5661b] uppercase mb-2">
             Udupipages Beach Run 2026 • December 2026
           </div>
 
           <h1
-            className="hero-h1 font-['Barlow_Condensed',sans-serif] uppercase font-black text-[#062b63] my-[17px] leading-[0.82] tracking-tight"
-            style={{ fontSize: 'clamp(48px, 7.5vw, 95px)' }}
+            className="hero-h1 font-['Barlow_Condensed',sans-serif] uppercase font-extrabold text-[#062b63] my-4 leading-[0.92] tracking-tight"
+            style={{ fontSize: 'clamp(38px, 5.2vw, 68px)' }}
           >
             Trade the concrete jungle
             <br />

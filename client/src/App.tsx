@@ -19,12 +19,17 @@ type ViewState = 'home' | 'blog' | 'gallery' | 'route-map';
 
 export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('home');
+  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
-      if (hash === '#blog-page' || hash === '#blog') {
+      if (hash.startsWith('#blog-page') || hash === '#blog') {
         setCurrentView('blog');
+        const match = hash.match(/#blog-page-(.+)/);
+        if (match) {
+          setSelectedArticleId(match[1]);
+        }
       } else if (hash === '#gallery-page' || hash === '#gallery-all') {
         setCurrentView('gallery');
       } else if (hash === '#route-map-page' || hash === '#full-route') {
@@ -39,10 +44,11 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  const navigateTo = (view: ViewState, targetSection?: string) => {
+  const navigateTo = (view: ViewState, targetSectionOrArticleId?: string) => {
     setCurrentView(view);
     if (view === 'blog') {
-      window.location.hash = 'blog-page';
+      setSelectedArticleId(targetSectionOrArticleId || null);
+      window.location.hash = targetSectionOrArticleId ? `blog-page-${targetSectionOrArticleId}` : 'blog-page';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (view === 'gallery') {
       window.location.hash = 'gallery-page';
@@ -51,10 +57,10 @@ export const App: React.FC = () => {
       window.location.hash = 'route-map-page';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      if (targetSection) {
-        window.location.hash = targetSection;
+      if (targetSectionOrArticleId) {
+        window.location.hash = targetSectionOrArticleId;
         setTimeout(() => {
-          const el = document.getElementById(targetSection);
+          const el = document.getElementById(targetSectionOrArticleId);
           if (el) {
             el.scrollIntoView({ behavior: 'smooth' });
           } else {
@@ -82,13 +88,16 @@ export const App: React.FC = () => {
           <Register />
           <Gallery onNavigateToGallery={() => navigateTo('gallery')} />
           <Partners />
-          <BlogNews onNavigateToBlog={() => navigateTo('blog')} />
+          <BlogNews onNavigateToBlog={(artId) => navigateTo('blog', artId)} />
           <FAQ />
         </main>
       )}
 
       {currentView === 'blog' && (
-        <BlogPage onBackToHome={() => navigateTo('home')} />
+        <BlogPage
+          initialArticleId={selectedArticleId}
+          onBackToHome={() => navigateTo('home')}
+        />
       )}
 
       {currentView === 'gallery' && (

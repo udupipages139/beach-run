@@ -134,15 +134,30 @@ export const allArticles: Article[] = [
 
 interface BlogPageProps {
   onBackToHome: () => void;
+  initialArticleId?: string | null;
 }
 
-export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome }) => {
+export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticleId }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(() => {
+    if (initialArticleId) {
+      return allArticles.find((a) => a.id === initialArticleId) || null;
+    }
+    return null;
+  });
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
   const [subscribed, setSubscribed] = useState(false);
   const [emailInput, setEmailInput] = useState('');
+
+  React.useEffect(() => {
+    if (initialArticleId) {
+      const art = allArticles.find((a) => a.id === initialArticleId);
+      if (art) {
+        setSelectedArticle(art);
+      }
+    }
+  }, [initialArticleId]);
 
   const categories = ['ALL', 'ENVIRONMENTAL ACTION', 'TRAINING & PERFORMANCE', 'COURSE INSIGHTS', 'COMMUNITY IMPACT'];
 

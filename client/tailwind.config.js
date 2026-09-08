@@ -24,9 +24,10 @@ export default {
         sunsetOrange: "#0066FF",
       },
       fontFamily: {
-        display: ['Montserrat', 'sans-serif'],
-        sans: ['Montserrat', 'sans-serif'],
-        mono: ['Montserrat', 'monospace'],
+        display: ['"Barlow Condensed"', 'sans-serif'],
+        heading: ['"Barlow Condensed"', 'sans-serif'],
+        sans: ['"DM Sans"', 'sans-serif'],
+        mono: ['"DM Sans"', 'sans-serif'],
       },
       backgroundImage: {
         'blue-gradient': 'linear-gradient(135deg, #00A3FF 0%, #0066FF 100%)',
