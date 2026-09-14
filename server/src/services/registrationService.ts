@@ -83,12 +83,16 @@ export class RegistrationService {
           age: record.age,
           category_id: record.categoryId,
           category_name: record.categoryName,
+          category: record.categoryName,
           tshirt_size: record.tshirtSize,
           emergency_contact: record.emergencyContact,
           previous_experience: record.previousExperience,
+          experience: record.previousExperience || '',
           status: record.status,
           amount_paid: record.amountINR,
           razorpay_order_id: record.razorpayOrderId,
+          order_id: record.razorpayOrderId,
+          email_sent: false,
           created_at: record.createdAt
         });
 
@@ -120,6 +124,7 @@ export class RegistrationService {
           .update({
             status: 'PAID',
             razorpay_payment_id: razorpayPaymentId,
+            payment_id: razorpayPaymentId,
             updated_at: new Date().toISOString()
           })
           .eq('razorpay_order_id', razorpayOrderId)
