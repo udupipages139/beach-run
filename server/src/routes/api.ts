@@ -3,6 +3,7 @@ import { CATEGORIES } from '../config/categories.js';
 import { createOrderController } from '../controllers/orderController.js';
 import { verifyPaymentController } from '../controllers/paymentController.js';
 import { handleRazorpayWebhookController } from '../controllers/webhookController.js';
+import { getAdminRegistrationsController } from '../controllers/adminController.js';
 
 const router = Router();
 
@@ -20,4 +21,8 @@ router.post('/payments/verify', verifyPaymentController);
 // POST /api/webhooks/razorpay — Independent webhook handler for payment.captured
 router.post('/webhooks/razorpay', handleRazorpayWebhookController);
 
+// GET /api/admin/registrations — Admin Dashboard endpoint for fetching all registered users & stats
+router.get('/admin/registrations', getAdminRegistrationsController);
+
 export default router;
+

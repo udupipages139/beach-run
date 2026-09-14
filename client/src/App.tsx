@@ -14,17 +14,22 @@ import { Footer } from './components/Footer';
 import { BlogPage } from './components/BlogPage';
 import { GalleryPage } from './components/GalleryPage';
 import { RouteMapPage } from './components/RouteMapPage';
+import { AdminDashboard } from './components/AdminDashboard';
 
-type ViewState = 'home' | 'blog' | 'gallery' | 'route-map';
+type ViewState = 'home' | 'blog' | 'gallery' | 'route-map' | 'admin';
 
 export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('home');
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash;
-      if (hash.startsWith('#blog-page') || hash === '#blog') {
+    const handleUrlRouting = () => {
+      const pathname = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+
+      if (pathname.includes('/admin') || hash === '#admin') {
+        setCurrentView('admin');
+      } else if (hash.startsWith('#blog-page') || hash === '#blog') {
         setCurrentView('blog');
         const match = hash.match(/#blog-page-(.+)/);
         if (match) {
@@ -39,14 +44,21 @@ export const App: React.FC = () => {
       }
     };
 
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    handleUrlRouting();
+    window.addEventListener('hashchange', handleUrlRouting);
+    window.addEventListener('popstate', handleUrlRouting);
+    return () => {
+      window.removeEventListener('hashchange', handleUrlRouting);
+      window.removeEventListener('popstate', handleUrlRouting);
+    };
   }, []);
 
   const navigateTo = (view: ViewState, targetSectionOrArticleId?: string) => {
     setCurrentView(view);
-    if (view === 'blog') {
+    if (view === 'admin') {
+      window.history.pushState({}, '', '/admin');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (view === 'blog') {
       setSelectedArticleId(targetSectionOrArticleId || null);
       window.location.hash = targetSectionOrArticleId ? `blog-page-${targetSectionOrArticleId}` : 'blog-page';
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -57,6 +69,9 @@ export const App: React.FC = () => {
       window.location.hash = 'route-map-page';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
+      if (window.location.pathname.includes('/admin')) {
+        window.history.pushState({}, '', '/');
+      }
       if (targetSectionOrArticleId) {
         window.location.hash = targetSectionOrArticleId;
         setTimeout(() => {
@@ -73,6 +88,10 @@ export const App: React.FC = () => {
       }
     }
   };
+
+  if (currentView === 'admin') {
+    return <AdminDashboard onBackToHome={() => navigateTo('home')} />;
+  }
 
   return (
     <div className="min-h-screen bg-white text-[#0A0A0A] selection:bg-[#00A3FF] selection:text-white font-sans">
@@ -114,3 +133,4 @@ export const App: React.FC = () => {
 };
 
 export default App;
+

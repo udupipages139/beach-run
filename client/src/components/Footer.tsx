@@ -89,9 +89,22 @@ export const Footer: React.FC = () => {
         {/* Bottom Credits & Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 space-y-4 sm:space-y-0 font-medium">
           <p>© 2026 Udupipages Media. All rights reserved. Udupipages Beach Run 2026.</p>
-          <div className="flex items-center space-x-1">
-            <span>Built with passion for Udupi’s coast</span>
-            <Heart className="w-3.5 h-3.5 text-[#00A3FF] fill-current" />
+          <div className="flex items-center space-x-4">
+            <a
+              href="/admin"
+              onClick={(e) => {
+                e.preventDefault();
+                window.history.pushState({}, '', '/admin');
+                window.dispatchEvent(new Event('popstate'));
+              }}
+              className="text-slate-500 hover:text-[#00A3FF] transition-colors font-mono text-[11px] uppercase tracking-wider font-bold"
+            >
+              🔒 Admin Access
+            </a>
+            <div className="flex items-center space-x-1">
+              <span>Built with passion for Udupi’s coast</span>
+              <Heart className="w-3.5 h-3.5 text-[#00A3FF] fill-current" />
+            </div>
           </div>
         </div>
 
