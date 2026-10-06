@@ -3,26 +3,85 @@ import { CATEGORIES } from '../config/categories.js';
 import { createOrderController } from '../controllers/orderController.js';
 import { verifyPaymentController } from '../controllers/paymentController.js';
 import { handleRazorpayWebhookController } from '../controllers/webhookController.js';
-import { getAdminRegistrationsController } from '../controllers/adminController.js';
+import { getTicketController, upload, uploadScreenshotController } from '../controllers/ticketController.js';
+import { adminAuthMiddleware } from '../middleware/auth.js';
+import {
+  adminLoginController,
+  adminLogoutController,
+  adminMeController,
+  adminStatsController,
+  adminRegistrationsController,
+  getAdminRegistrationsController,
+  adminCheckInController,
+  adminLookupController,
+  adminManualCheckInController,
+  adminResendEmailController,
+  adminApproveController,
+  adminScreenshotController,
+  adminExportController,
+  adminCheckInCountController
+} from '../controllers/adminController.js';
 
 const router = Router();
 
-// GET /api/categories — Return public category metadata & pricing
-router.get('/categories', (req, res) => {
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+// Categories
+router.get('/categories', (_req, res) => {
   return res.json({ success: true, categories: Object.values(CATEGORIES) });
 });
 
-// POST /api/orders/create — Create Razorpay Order or process Free registration
-router.post('/orders/create', createOrderController);
+// Registration + Razorpay order
+router.post('/registrations', createOrderController);
+router.post('/orders/create', createOrderController); // legacy alias
 
-// POST /api/payments/verify — Server-side signature verification after Razorpay Checkout
+// Payment verify
 router.post('/payments/verify', verifyPaymentController);
 
-// POST /api/webhooks/razorpay — Independent webhook handler for payment.captured
+// Razorpay Webhook (raw body needed for HMAC — handled in app.ts)
 router.post('/webhooks/razorpay', handleRazorpayWebhookController);
 
-// GET /api/admin/registrations — Admin Dashboard endpoint for fetching all registered users & stats
-router.get('/admin/registrations', getAdminRegistrationsController);
+// Ticket display (unguessable ticketId)
+router.get('/tickets/:ticketId', getTicketController);
+
+// Screenshot upload (authenticated via registrationId)
+router.post('/registrations/:id/screenshot', upload.single('screenshot'), uploadScreenshotController);
+
+// ─── Admin Auth (rate-limited in app.ts) ─────────────────────────────────────
+
+router.post('/admin/login', adminLoginController);
+router.post('/admin/logout', adminLogoutController);
+router.get('/admin/me', adminAuthMiddleware, adminMeController);
+
+// ─── Admin Protected Routes ───────────────────────────────────────────────────
+
+router.get('/admin/stats', adminAuthMiddleware, adminStatsController);
+
+// Legacy + new registrations endpoints
+router.get('/admin/registrations', adminAuthMiddleware, adminRegistrationsController);
+
+// Check-in (QR scan)
+router.post('/admin/checkin', adminAuthMiddleware, adminCheckInController);
+
+// Manual lookup by any identifier
+router.post('/admin/lookup', adminAuthMiddleware, adminLookupController);
+
+// Manual check-in from lookup
+router.post('/admin/manual-checkin', adminAuthMiddleware, adminManualCheckInController);
+
+// Email resend
+router.post('/admin/registrations/:id/resend', adminAuthMiddleware, adminResendEmailController);
+
+// Manual approve
+router.post('/admin/registrations/:id/approve', adminAuthMiddleware, adminApproveController);
+
+// Screenshot signed URL
+router.get('/admin/registrations/:id/screenshot', adminAuthMiddleware, adminScreenshotController);
+
+// CSV Export
+router.get('/admin/export.csv', adminAuthMiddleware, adminExportController);
+
+// Checked-in count (for scanner badge)
+router.get('/admin/checkin-count', adminAuthMiddleware, adminCheckInCountController);
 
 export default router;
-

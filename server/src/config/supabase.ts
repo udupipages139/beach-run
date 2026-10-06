@@ -4,20 +4,26 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
 
 export let supabase: SupabaseClient | null = null;
 
-if (supabaseUrl && supabaseAnonKey && supabaseUrl !== 'https://your-project.supabase.co') {
+if (
+  supabaseUrl &&
+  supabaseServiceKey &&
+  supabaseUrl !== 'https://your-project.supabase.co'
+) {
   try {
-    supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false }
     });
     console.log('[Supabase] Client initialized successfully.');
   } catch (err) {
-    console.warn('[Supabase] Failed to initialize Supabase client. Falling back to local store:', err);
+    console.warn('[Supabase] Failed to initialize client. Falling back to in-memory store:', err);
     supabase = null;
   }
 } else {
-  console.log('[Supabase] Credentials not configured in .env. Running with in-memory registration store fallback.');
+  console.log('[Supabase] Credentials not configured. Running with in-memory fallback store.');
 }
+
+export default supabase;

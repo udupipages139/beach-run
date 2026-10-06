@@ -151,4 +151,56 @@ CREATE TABLE public.registrations (
   - `VITE_API_BASE_URL`: `https://beach-run-api.onrender.com/api`
   - `VITE_RAZORPAY_KEY_ID`: `rzp_test_...` (or `rzp_live_...`)
 
+---
+
+## 🎟️ Payments, Tickets & Gate Check-In
+
+### 1. Payment & Registration Flow
+1. **Runner Registration**: User selects race category (3K ₹399, 5K ₹599, 10K ₹799, 15K ₹999) and enters details.
+   - Age validation is strictly enforced both client and server-side:
+     - 3K: All ages
+     - 5K: Minimum age 12
+     - 10K: Minimum age 16
+     - 15K: Minimum age 18
+2. **Razorpay Order Creation**: `POST /api/registrations` creates a pending registration and opens Razorpay Checkout.
+3. **Payment Verification & Webhook**:
+   - Client calls `POST /api/payments/verify` with HMAC-SHA256 signature verification.
+   - Webhook `POST /api/webhooks/razorpay` captures `payment.captured` & `order.paid` events idempotently.
+4. **Ticket Finalization (`finalizeTicket`)**:
+   - Generates a crypto-random 256-bit QR token (`BR26.<token>`) without exposing raw PII.
+   - Auto-assigns category-specific Bib numbers (3K: 1000+, 5K: 2000+, 10K: 3000+, 15K: 4000+).
+   - Generates high-res QR code PNG buffer.
+   - Sends responsive HTML confirmation email via Nodemailer with inline CID attachment and reporting instructions.
+
+### 2. Admin Panel & Gate Scanner
+- **Access**: Open `/admin` or click "ADMIN ACCESS" in header / footer.
+- **Authentication**: JWT authentication with `httpOnly` secure cookies.
+- **Dashboard Tab**:
+  - Live revenue, total registrations, category breakdowns, and check-in counters.
+- **Runners Tab**:
+  - Searchable by name, email, phone, ticket ID, or transaction ID.
+  - Filter by category, payment status, or checked-in status.
+  - View payment proof screenshots, resend ticket emails, or manual approval.
+  - CSV Export.
+- **Gate Scanner Tab (`/admin/scanner`)**:
+  - Real-time camera scanner via `html5-qrcode` (rear camera preferred).
+  - Atomic database check-in: `UPDATE ... WHERE qrToken = ? AND checkedIn = false AND paymentStatus = 'PAID'`.
+  - Immediate visual & audio feedback:
+    - 🟢 **VALID — CHECKED IN**: Displays runner details, bib number, emergency contact, t-shirt size.
+    - 🔴 **ALREADY CHECKED IN**: Shows time of original scan to prevent ticket sharing.
+    - 🔴 **INVALID QR / UNPAID**: Rejects unconfirmed or counterfeit passes.
+  - Manual fallback search bar: supports Bib number, ticket ID, QR token, or Razorpay payment ID.
+
+### 3. Automated Test Suite & Scripts
+```bash
+# Run unit and integration tests (38 tests)
+npm test --prefix server
+
+# Seed 5 PAID runners + 1 PENDING runner for testing
+npm run seed --prefix server
+
+# Simulate Razorpay payment.captured webhook locally
+npm run simulate-webhook --prefix server <order_id> [payment_id]
+```
+
 
