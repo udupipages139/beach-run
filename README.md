@@ -213,6 +213,9 @@ npm run seed --prefix server
 
 # Simulate Razorpay payment.captured webhook locally
 npm run simulate-webhook --prefix server <order_id> [payment_id]
+
+# Run comprehensive Webhook diagnostic suite (signatures, failures, idempotency)
+npm run test:webhook --prefix server
 ```
 
 
