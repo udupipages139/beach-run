@@ -66,8 +66,13 @@ VITE_RAZORPAY_KEY_ID=rzp_test_YourTestKeyIdHere
 
 ### 3. Run Development Servers
 
-Run backend and frontend in separate terminal windows:
+**Option A (Single Command from Root):**
+```bash
+# Run both Server (port 5000) and Client (port 5173) concurrently:
+npm run dev
+```
 
+**Option B (Separate Terminals):**
 ```bash
 # Terminal 1: Start Express API Server (Port 5000)
 cd server
@@ -146,10 +151,17 @@ CREATE TABLE public.registrations (
 - Root Directory: `client`
 - Build Command: `npm run build` (or `npm install && npm run build`)
 - Publish Directory: `dist`
-- Redirect / Rewrite Rule: `/*` -> `/index.html` (Action: `Rewrite`)
+- **SPA Rewrites (Crucial for `/admin` direct access)**:
+  - Automatically handled via [`client/public/_redirects`](file:///c:/Users/mrcyb/OneDrive/Desktop/project/runner/client/public/_redirects) (or [`client/vercel.json`](file:///c:/Users/mrcyb/OneDrive/Desktop/project/runner/client/vercel.json) on Vercel).
+  - In Render Dashboard -> Your Static Site -> **Redirects/Rewrites**:
+    - **Source**: `/*`
+    - **Destination**: `/index.html`
+    - **Action**: `Rewrite`
 - Environment Variables in Render Dashboard:
   - `VITE_API_BASE_URL`: `https://beach-run-api.onrender.com/api`
   - `VITE_RAZORPAY_KEY_ID`: `rzp_test_...` (or `rzp_live_...`)
+
+> 💡 **Admin Panel Access**: You can access the admin dashboard via direct URL (`/admin`), hash URL (`/#admin`), or the Admin button in the navigation. The SPA includes fallback redirection handling for static servers.
 
 ---
 

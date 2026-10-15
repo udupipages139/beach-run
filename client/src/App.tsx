@@ -26,8 +26,20 @@ export const App: React.FC = () => {
     const handleUrlRouting = () => {
       const pathname = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
+      const search = window.location.search.toLowerCase();
 
-      if (pathname.includes('/admin') || hash === '#admin') {
+      const isAdmin =
+        pathname === '/admin' ||
+        pathname.startsWith('/admin') ||
+        pathname.includes('/admin') ||
+        hash === '#admin' ||
+        hash === '#/admin' ||
+        hash.startsWith('#admin') ||
+        hash.startsWith('#/admin') ||
+        search.includes('view=admin') ||
+        search.includes('admin');
+
+      if (isAdmin) {
         setCurrentView('admin');
       } else if (hash.startsWith('#blog-page') || hash === '#blog') {
         setCurrentView('blog');
@@ -69,7 +81,7 @@ export const App: React.FC = () => {
       window.location.hash = 'route-map-page';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      if (window.location.pathname.includes('/admin')) {
+      if (window.location.pathname.includes('/admin') || window.location.hash.includes('admin')) {
         window.history.pushState({}, '', '/');
       }
       if (targetSectionOrArticleId) {

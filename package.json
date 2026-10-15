@@ -6,7 +6,11 @@
   "scripts": {
     "build": "npm run build --prefix client",
     "deploy": "npm run deploy --prefix client",
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue,magenta\" \"npm run dev:server\" \"npm run dev:client\"",
     "dev:client": "npm run dev --prefix client",
     "dev:server": "npm run dev --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
   }
 }
