@@ -10,7 +10,8 @@
     "test": "tsx tests/runner.test.ts",
     "seed": "tsx scripts/seed.ts",
     "simulate-webhook": "tsx scripts/simulate-webhook.ts",
-    "test:webhook": "tsx scripts/test-webhook-suite.ts"
+    "test:webhook": "tsx scripts/test-webhook-suite.ts",
+    "test:smtp": "tsx scripts/test-smtp.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

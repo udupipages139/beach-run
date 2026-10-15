@@ -216,6 +216,27 @@ npm run simulate-webhook --prefix server <order_id> [payment_id]
 
 # Run comprehensive Webhook diagnostic suite (signatures, failures, idempotency)
 npm run test:webhook --prefix server
+
+# Test SMTP email connection and send a test email
+npm run test:smtp --prefix server [recipient_email]
 ```
+
+---
+
+## 📧 SMTP Email Configuration
+
+For sending automated registration tickets with QR codes to runners:
+
+```env
+# In /server/.env (and Vercel Dashboard for Production)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-16-char-app-password
+MAIL_FROM=Udupipages Beach Run 2026 <your-email@gmail.com>
+```
+
+> 💡 **Gmail Tip**: Use a 16-character Google **App Password** (generated from [Google Account Security ➔ App Passwords](https://myaccount.google.com/apppasswords)) with 2-Step Verification enabled, rather than your standard account login password.
+
 
 
