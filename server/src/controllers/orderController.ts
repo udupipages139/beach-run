@@ -52,13 +52,31 @@ export const createOrderController = async (req: Request, res: Response) => {
         });
         razorpayOrderId = rzpOrder.id;
       } catch (rzpErr: any) {
-        console.warn('[OrderController] Razorpay API error, falling back to mock:', rzpErr.message);
-        razorpayOrderId = `order_mock_${Date.now()}`;
-        isMock = true;
+        console.error('[OrderController] Razorpay API error:', rzpErr);
+        const allowMock = process.env.ALLOW_MOCK_PAYMENTS === 'true' && process.env.NODE_ENV !== 'production';
+        if (allowMock) {
+          console.warn('[OrderController] ALLOW_MOCK_PAYMENTS is true; using mock order in development');
+          razorpayOrderId = `order_mock_${Date.now()}`;
+          isMock = true;
+        } else {
+          const detail = rzpErr?.error?.description || rzpErr?.message || 'Authentication or network error';
+          return res.status(502).json({
+            success: false,
+            error: `Razorpay payment gateway error: ${detail}. Please verify RAZORPAY_KEY_ID & RAZORPAY_KEY_SECRET.`
+          });
+        }
       }
     } else {
-      razorpayOrderId = `order_mock_${Date.now()}`;
-      isMock = true;
+      const allowMock = process.env.ALLOW_MOCK_PAYMENTS === 'true' && process.env.NODE_ENV !== 'production';
+      if (allowMock) {
+        razorpayOrderId = `order_mock_${Date.now()}`;
+        isMock = true;
+      } else {
+        return res.status(500).json({
+          success: false,
+          error: 'Razorpay keys are not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in the server environment.'
+        });
+      }
     }
 
     const pendingReg = await RegistrationService.createRegistration({

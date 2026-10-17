@@ -29,16 +29,6 @@ export const CATEGORIES: Record<string, CategoryConfig> = {
     eligibility: "Open to beginners, children & families",
     flagOffTime: "7:00 AM"
   },
-  "1k_3k_fun": {
-    id: "3k_fun",
-    name: "3K Fun Run",
-    distance: "3 Kilometers",
-    priceINR: 399,
-    isFree: false,
-    description: "Padukere Ground ➔ Padukare School Ground (3K). Kids & Senior Citizens walk/run.",
-    eligibility: "Open to beginners, children & families",
-    flagOffTime: "7:00 AM"
-  },
   "5k": {
     id: "5k",
     name: "5K Run",

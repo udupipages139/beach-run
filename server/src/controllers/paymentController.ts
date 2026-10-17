@@ -15,7 +15,12 @@ export const verifyPaymentController = async (req: Request, res: Response) => {
     let isValidSignature = false;
 
     if (isMockOrder) {
-      console.log('[PaymentController] Mock order — skipping signature check:', razorpay_order_id);
+      const allowMock = process.env.ALLOW_MOCK_PAYMENTS === 'true' && process.env.NODE_ENV !== 'production';
+      if (!allowMock) {
+        console.warn('[PaymentController] Blocked unauthorized mock order verification attempt:', razorpay_order_id);
+        return res.status(403).json({ success: false, error: 'Mock payments are disabled. Real payment signature required.' });
+      }
+      console.log('[PaymentController] Dev mock order — skipping signature check:', razorpay_order_id);
       isValidSignature = true;
     } else {
       const secret = getRazorpayKeySecret();

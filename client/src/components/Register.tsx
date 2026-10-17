@@ -95,49 +95,16 @@ export const Register: React.FC = () => {
 
       setRegistrationId(data.registrationId || null);
 
-      // Mock / dev mode
+      // Razorpay Checkout flow
       if (data.isMock || !data.keyId || data.keyId === 'rzp_test_mock' || data.keyId?.includes('placeholder')) {
-        const mockPaymentId = `pay_mock_${Date.now()}`;
-        const verifyRes = await fetch(`${API_BASE_URL}/payments/verify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            razorpay_order_id: data.orderId,
-            razorpay_payment_id: mockPaymentId,
-            razorpay_signature: `mock_sig_${Date.now()}`
-          })
-        });
-        const verifyData = await safeFetchJson(verifyRes);
-        if (!verifyRes.ok || !verifyData.success) throw new Error(verifyData.error || 'Test payment failed.');
-
-        if (verifyData.ticket || (verifyData.qrImageBase64 && verifyData.bibNumber)) {
-          const t: TicketData = verifyData.ticket || {
-            ticketId: verifyData.ticketId || '',
-            bibNumber: verifyData.bibNumber || 0,
-            fullName: verifyData.fullName || formData.fullName,
-            email: verifyData.email || formData.email,
-            categoryName: verifyData.categoryName || selectedCategory.name,
-            categoryId: verifyData.categoryId || selectedCategory.id,
-            tshirtSize: verifyData.tshirtSize || formData.tshirtSize,
-            transactionId: verifyData.transactionId || verifyData.paymentId || mockPaymentId,
-            registrationNumber: verifyData.registrationNumber || '',
-            qrImageBase64: verifyData.qrImageBase64,
-            amountINR: verifyData.amountINR || selectedCategory.priceINR
-          };
-          setTicketData(t);
-        } else {
-          await fetchAndShowTicket(verifyData.ticketId, verifyData.registrationId || data.registrationId);
-        }
-
-        setIsModalOpen(false);
-        setLoading(false);
-        return;
+        throw new Error('Razorpay payment gateway is not active or API keys are invalid. Please check payment settings.');
       }
 
-      // Real Razorpay
+      // Ensure Razorpay SDK is loaded
       const isLoaded = await loadRazorpayScript();
-      if (!isLoaded) throw new Error('Razorpay SDK failed to load. Check your internet connection.');
+      if (!isLoaded || !(window as any).Razorpay) {
+        throw new Error('Razorpay Checkout SDK failed to load. Please check your internet connection or ad-blocker.');
+      }
 
       const options = {
         key: data.keyId,
@@ -147,6 +114,23 @@ export const Register: React.FC = () => {
         description: `Registration for ${selectedCategory.name}`,
         image: '/images/logo.png',
         order_id: data.orderId!,
+        prefill: {
+          name: formData.fullName,
+          email: formData.email,
+          contact: formData.phone
+        },
+        notes: {
+          category: selectedCategory.name,
+          tshirt_size: formData.tshirtSize,
+          registration_number: data.registrationNumber || ''
+        },
+        theme: { color: '#FF7A30' },
+        modal: {
+          ondismiss: () => {
+            console.log('Razorpay modal closed by runner');
+            setLoading(false);
+          }
+        },
         handler: async (rzpResponse: any) => {
           setLoading(true);
           try {
@@ -161,8 +145,10 @@ export const Register: React.FC = () => {
               })
             });
             const verifyData = await safeFetchJson(verifyRes);
-            if (!verifyRes.ok || !verifyData.success) throw new Error(verifyData.error || 'Verification failed.');
-            
+            if (!verifyRes.ok || !verifyData.success) {
+              throw new Error(verifyData.error || 'Payment verification failed. Please contact support.');
+            }
+
             if (verifyData.ticket || (verifyData.qrImageBase64 && verifyData.bibNumber)) {
               const t: TicketData = verifyData.ticket || {
                 ticketId: verifyData.ticketId || '',
@@ -188,14 +174,15 @@ export const Register: React.FC = () => {
           } finally {
             setLoading(false);
           }
-        },
-        prefill: { name: formData.fullName, email: formData.email, contact: formData.phone },
-        notes: { category: selectedCategory.name, tshirt_size: formData.tshirtSize },
-        theme: { color: '#FF7A30' },
-        modal: { ondismiss: () => setLoading(false) }
+        }
       };
 
       const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (resp: any) {
+        console.error('Razorpay payment failed:', resp.error);
+        setErrorMessage(`Payment declined: ${resp.error?.description || resp.error?.reason || 'Transaction could not be completed.'}`);
+        setLoading(false);
+      });
       rzp.open();
     } catch (err: any) {
       setErrorMessage(err.message || 'An error occurred. Please try again.');
