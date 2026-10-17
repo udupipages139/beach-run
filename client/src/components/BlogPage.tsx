@@ -76,7 +76,7 @@ export const allArticles: Article[] = [
     excerpt: 'A mile-by-mile guide to Udupi’s most scenic coastal running track where fresh river estuaries meet the Arabian Sea.',
     content: [
       'The 2026 course is widely considered one of India’s most scenic coastal marathon tracks. Starting at Padukere Ground, runners head south along the sea wall toward Padukare School Ground (3K turnaround).',
-      'Continuing past Blue Wave Warriors (5K checkpoint) and Mattu Beach (10K turnaround), the route culminates under the shadow of the historic 1901 Kapu Light House.',
+      'Continuing past Blue Wave Warriors (5K checkpoint) and Mattu Beach (10K milestone), the route culminates under the shadow of the historic 1901 Kapu Light House.',
       'Spectator cheer zones will be established at key junctions with traditional Yakshagana drum beats cheering runners toward the finish line.'
     ],
     author: 'Udupipages Logistics',

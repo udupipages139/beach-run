@@ -71,7 +71,7 @@ export const routeWaypoints: RouteWaypoint[] = [
   {
     id: 'mattu-beach',
     name: 'MATTU BEACH',
-    distance: '10.0 KM TURNAROUND',
+    distance: '10.0 KM MILESTONE',
     elevation: '1m above sea level',
     surface: 'Wet Firm Shoreline Sand',
     description: 'Famed shoreline stretch near Pangala river basin. Ocean breeze and wide open sand vistas.',
@@ -462,7 +462,7 @@ export const RouteMapPage: React.FC<RouteMapPageProps> = ({ onBackToHome }) => {
               <Award className="w-6 h-6 text-[#00A3FF]" />
               <h4 className="font-thunder text-xl text-white">CHIP TIMING MATS</h4>
               <p className="text-xs text-slate-400 leading-relaxed font-normal">
-                RFID electronic timing mats placed at Start (0K), 5K Checkpoint, 10K Turnaround, and Kapu Finish Line (15.2K).
+                RFID electronic timing mats placed at Start (0K), 5K Checkpoint, 10K Milestone, and Kapu Finish Line (15.2K).
               </p>
             </div>
           </div>

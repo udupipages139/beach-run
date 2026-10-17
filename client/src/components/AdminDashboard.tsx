@@ -56,7 +56,7 @@ interface AdminDashboardProps {
 
 type AdminView = 'dashboard' | 'registrations' | 'proofs' | 'scanner';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+import { API_BASE_URL as API_URL, safeFetchJson } from '../utils/api';
 
 // ─── Login Form ───────────────────────────────────────────────────────────────
 
@@ -167,7 +167,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
         credentials: 'include',
         body: JSON.stringify({ email, password })
       });
-      const data = await res.json();
+      const data = await safeFetchJson(res);
       if (res.ok && data.success) {
         sessionStorage.setItem('ubr_admin_jwt', 'session');
         setAuthToken('session');
@@ -197,7 +197,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
     setErrorMsg(null);
     try {
       const res = await fetch(`${API_URL}/admin/registrations`, { credentials: 'include' });
-      const data = await res.json();
+      const data = await safeFetchJson(res);
       if (res.ok && data.success) {
         setRegistrations(data.registrations || []);
         setStats(data.stats || null);
@@ -224,7 +224,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
   const handleResendEmail = async (id: string) => {
     try {
       const res = await fetch(`${API_URL}/admin/registrations/${id}/resend`, { method: 'POST', credentials: 'include' });
-      const data = await res.json();
+      const data = await safeFetchJson(res);
       showAction(data.emailSent ? 'ok' : 'err', data.message || 'Resend attempted');
     } catch (_) { showAction('err', 'Resend failed'); }
   };
@@ -237,7 +237,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ note: 'Admin manual approval via dashboard' })
       });
-      const data = await res.json();
+      const data = await safeFetchJson(res);
       showAction(data.success ? 'ok' : 'err', data.success ? 'Approved & ticket issued' : data.error);
       if (data.success) fetchRegistrations();
     } catch (_) { showAction('err', 'Approval failed'); }
@@ -255,7 +255,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
         method: 'POST',
         body: formData
       });
-      const data = await res.json();
+      const data = await safeFetchJson(res);
       if (res.ok && data.success) {
         showAction('ok', 'Payment screenshot saved successfully!');
         setModalUploadFile(null);
@@ -579,7 +579,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                 <div className="flex flex-wrap gap-3 items-center w-full md:w-auto">
                   {[
                     { label: 'Status', value: statusFilter, onChange: setStatusFilter, options: [['ALL','All Statuses'],['PAID','PAID'],['PENDING','PENDING'],['FAILED','FAILED']] },
-                    { label: 'Category', value: categoryFilter, onChange: setCategoryFilter, options: [['ALL','All Categories'],['3k_fun','3K Fun Run'],['5k','5K Run'],['10k','10K Run'],['15k','15K Run']] }
+                    { label: 'Category', value: categoryFilter, onChange: setCategoryFilter, options: [['ALL','All Categories'],['3k_fun','3K Fun Run'],['5k','5K Run'],['15k','15K Run']] }
                   ].map(({ label, value, onChange, options }) => (
                     <div key={label} className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-md px-3 py-1.5 text-xs">
                       <Filter className="w-3.5 h-3.5 text-slate-400" />

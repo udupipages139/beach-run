@@ -27,7 +27,7 @@ export const FAQ: React.FC = () => {
     },
     {
       q: 'What are the race categories?',
-      a: 'The event will have 3K, 5K, 10K and 15K categories.'
+      a: 'The event features three official categories: 3K Fun Run, 5K Coastal Run, and the 15K Challenge to Kapu Light House.'
     },
     {
       q: 'Can beginners participate?',

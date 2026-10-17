@@ -49,16 +49,6 @@ export const CATEGORIES: Record<string, CategoryConfig> = {
     eligibility: "Age 12 and above",
     flagOffTime: "6:30 AM"
   },
-  "10k": {
-    id: "10k",
-    name: "10K Run",
-    distance: "10 Kilometers",
-    priceINR: 799,
-    isFree: false,
-    description: "Padukere Ground ➔ Mattu Beach (10K). Mid-distance timed beach run.",
-    eligibility: "Age 16 and above",
-    flagOffTime: "6:00 AM"
-  },
   "15k": {
     id: "15k",
     name: "15K Run",

@@ -8,8 +8,7 @@ import {
   Hash, User, Shirt, Phone, Mail, Clock, QrCode, Zap, ChevronLeft, Wifi,
   CreditCard, Calendar, UserCheck, ShieldAlert
 } from 'lucide-react';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+import { API_BASE_URL, safeFetchJson } from '../utils/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,7 +46,7 @@ interface CheckInResponse {
 // ─── Flag-off times ───────────────────────────────────────────────────────────
 
 const FLAG_TIMES: Record<string, string> = {
-  '3k_fun': '7:00 AM', '5k': '6:30 AM', '10k': '6:00 AM', '15k': '5:30 AM'
+  '3k_fun': '7:00 AM', '5k': '6:30 AM', '15k': '5:30 AM'
 };
 
 // ─── Sound feedback (Web Audio API) ───────────────────────────────────────────
@@ -115,7 +114,7 @@ export const GateScanner: React.FC<GateScannerProps> = ({ authToken, onBack }) =
       const res = await fetch(`${API_BASE_URL}/admin/checkin-count`, {
         headers: authHeaders(), credentials: 'include'
       });
-      const data = await res.json();
+      const data = await safeFetchJson(res);
       if (data.success) setCheckedInCount(data.count);
     } catch (_) {}
   }, [authToken]);
@@ -212,7 +211,7 @@ export const GateScanner: React.FC<GateScannerProps> = ({ authToken, onBack }) =
         credentials: 'include',
         body: JSON.stringify({ token: text })
       });
-      const data: CheckInResponse = await res.json();
+      const data: CheckInResponse = await safeFetchJson(res);
       setLastResult(data);
 
       if (data.result === 'SUCCESS') {
@@ -248,7 +247,7 @@ export const GateScanner: React.FC<GateScannerProps> = ({ authToken, onBack }) =
         credentials: 'include',
         body: JSON.stringify({ token: manualToken.trim() })
       });
-      const data = await res.json();
+      const data = await safeFetchJson(res);
       if (data.found && data.registration) {
         setLookupResult(data.registration);
       } else {
@@ -271,7 +270,7 @@ export const GateScanner: React.FC<GateScannerProps> = ({ authToken, onBack }) =
         credentials: 'include',
         body: JSON.stringify({ token: manualToken.trim() })
       });
-      const data: CheckInResponse = await res.json();
+      const data: CheckInResponse = await safeFetchJson(res);
       setLastResult(data);
       setLookupResult(null);
       setLookupNotFound(false);

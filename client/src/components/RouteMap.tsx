@@ -41,7 +41,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({ onNavigateToRouteMap }) => {
       id: 3,
       title: 'MATTU BEACH',
       km: '10.0 KM',
-      desc: '10K Endurance Run turnaround point along the pristine Mattu Beach coastline and sea-ridge.',
+      desc: '10KM coastal timing and hydration milestone along the pristine Mattu Beach coastline on the route to Kapu.',
       icon: Navigation,
       color: '#FFB347',
       image: '/images/checkpoints/mattu-beach2.jpg',

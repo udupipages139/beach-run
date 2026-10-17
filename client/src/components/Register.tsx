@@ -5,16 +5,15 @@ import {
   Download, Mail, Upload, QrCode, Hash, Clock, MapPin
 } from 'lucide-react';
 import { loadRazorpayScript } from '../utils/razorpay';
+import { API_BASE_URL, safeFetchJson } from '../utils/api';
 import { Category, RegistrationFormData, OrderResponse, VerificationResponse } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 // ─── Category data ────────────────────────────────────────────────────────────
 
 const categories: Category[] = [
   { id: '3k_fun', name: '3K FUN RUN', distance: '3 Kilometers', priceINR: 399, isFree: false, description: 'Padukere Ground ➔ Padukare School Ground. Kids & Families welcome.', eligibility: 'All Ages', flagOffTime: '7:00 AM' },
   { id: '5k', name: '5K RUN', distance: '5 Kilometers', priceINR: 599, isFree: false, description: 'Padukere Ground ➔ Blue Wave. Scenic beach run for fitness enthusiasts.', eligibility: 'Age 12+', flagOffTime: '6:30 AM' },
-  { id: '10k', name: '10K RUN', distance: '10 Kilometers', priceINR: 799, isFree: false, description: 'Padukere Ground ➔ Mattu Beach. Mid-distance timed challenge.', eligibility: 'Age 16+', flagOffTime: '6:00 AM' },
   { id: '15k', name: '15K RUN', distance: '15 Kilometers', priceINR: 999, isFree: false, description: 'Padukere Ground ➔ Kapu Light House. Full coastal challenge.', eligibility: 'Age 18+', flagOffTime: '5:30 AM' }
 ];
 
@@ -89,7 +88,7 @@ export const Register: React.FC = () => {
         })
       });
 
-      const data: OrderResponse = await response.json();
+      const data: OrderResponse = await safeFetchJson<OrderResponse>(response);
       if (!response.ok || !data.success) {
         throw new Error((data as any).error || data.message || 'Registration failed.');
       }
@@ -109,7 +108,7 @@ export const Register: React.FC = () => {
             razorpay_signature: `mock_sig_${Date.now()}`
           })
         });
-        const verifyData = await verifyRes.json();
+        const verifyData = await safeFetchJson(verifyRes);
         if (!verifyRes.ok || !verifyData.success) throw new Error(verifyData.error || 'Test payment failed.');
 
         if (verifyData.ticket || (verifyData.qrImageBase64 && verifyData.bibNumber)) {
@@ -161,7 +160,7 @@ export const Register: React.FC = () => {
                 razorpay_signature: rzpResponse.razorpay_signature
               })
             });
-            const verifyData = await verifyRes.json();
+            const verifyData = await safeFetchJson(verifyRes);
             if (!verifyRes.ok || !verifyData.success) throw new Error(verifyData.error || 'Verification failed.');
             
             if (verifyData.ticket || (verifyData.qrImageBase64 && verifyData.bibNumber)) {
@@ -225,7 +224,7 @@ export const Register: React.FC = () => {
     for (let attempt = 0; attempt < 4; attempt++) {
       try {
         const res = await fetch(`${API_BASE_URL}/tickets/${idToFetch}`);
-        const data = await res.json();
+        const data = await safeFetchJson(res);
         if (data.success && data.ticket && data.ticket.bibNumber && data.ticket.qrImageBase64) {
           setTicketData(data.ticket);
           return;
@@ -239,7 +238,7 @@ export const Register: React.FC = () => {
     // Final fallback attempt
     try {
       const res = await fetch(`${API_BASE_URL}/tickets/${idToFetch}`);
-      const data = await res.json();
+      const data = await safeFetchJson(res);
       if (data.success && data.ticket) {
         setTicketData(data.ticket);
       } else {
@@ -289,7 +288,7 @@ export const Register: React.FC = () => {
   };
 
   const flagTimes: Record<string, string> = {
-    '3k_fun': '7:00 AM', '5k': '6:30 AM', '10k': '6:00 AM', '15k': '5:30 AM'
+    '3k_fun': '7:00 AM', '5k': '6:30 AM', '15k': '5:30 AM'
   };
 
   return (
@@ -311,7 +310,7 @@ export const Register: React.FC = () => {
         </div>
 
         {/* Category Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {categories.map((cat) => {
             const isSelected = selectedCategory?.id === cat.id;
             return (
@@ -457,7 +456,7 @@ export const Register: React.FC = () => {
                   <select name="previousExperience" value={formData.previousExperience} onChange={handleInputChange}
                     className="w-full bg-white border border-gray-300 focus:border-[#FF7A30] focus:outline-none px-4 py-2.5 text-gray-900">
                     <option>First Time Runner (Beginner)</option>
-                    <option>5K / 10K Completed Before</option>
+                    <option>5K Run Completed Before</option>
                     <option>Half Marathon (21K) / 15K Completed</option>
                     <option>Full Marathon / Experienced Runner</option>
                   </select>

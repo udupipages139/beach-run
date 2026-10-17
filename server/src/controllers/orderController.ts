@@ -26,7 +26,7 @@ export const createOrderController = async (req: Request, res: Response) => {
 
     // Age eligibility (server-side)
     const ageNum = Number(age);
-    const ageChecks: Record<string, number> = { '5k': 12, '10k': 16, '15k': 18 };
+    const ageChecks: Record<string, number> = { '5k': 12, '15k': 18 };
     if (ageChecks[categoryId] && ageNum < ageChecks[categoryId]) {
       return res.status(400).json({
         success: false,

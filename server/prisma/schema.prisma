@@ -1,0 +1,135 @@
+// Prisma Schema — Udupipages Beach Run 2026
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum CheckinMethod {
+  QR
+  MANUAL
+}
+
+enum CheckinResult {
+  SUCCESS
+  DUPLICATE
+  INVALID
+  UNPAID
+}
+
+// ─── Registrations Table ───────────────────────────────────────────────────────
+model Registration {
+  id                    String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  registrationNumber    String        @unique @map("registration_number")
+  fullName              String        @map("full_name")
+  email                 String        @map("email")
+  phone                 String        @map("phone")
+  age                   Int           @map("age")
+  categoryId            String        @map("category_id")
+  categoryName          String        @map("category_name")
+  tshirtSize            String        @default("M") @map("tshirt_size")
+  experience            String?       @map("experience")
+  emergencyContactName  String        @map("emergency_contact_name")
+  emergencyContactPhone String        @map("emergency_contact_phone")
+  amountINR             Int           @default(0) @map("amount_inr")
+
+  // Payment fields
+  paymentStatus         PaymentStatus @default(PENDING) @map("payment_status")
+  razorpayOrderId       String?       @unique @map("razorpay_order_id")
+  razorpayPaymentId     String?       @unique @map("razorpay_payment_id")
+  razorpaySignature     String?       @map("razorpay_signature")
+  transactionId         String?       @unique @map("transaction_id")
+  paymentScreenshotUrl  String?       @map("payment_screenshot_url")
+  screenshotUploadedAt  DateTime?     @map("screenshot_uploaded_at") @db.Timestamptz
+
+  // Ticket & Bib
+  ticketId              String?       @unique @map("ticket_id") @db.Uuid
+  qrToken               String?       @unique @map("qr_token")
+  bibNumber             Int?          @unique @map("bib_number")
+
+  // Email notifications
+  emailSent             Boolean       @default(false) @map("email_sent")
+  emailSentAt           DateTime?     @map("email_sent_at") @db.Timestamptz
+  emailAttempts         Int           @default(0) @map("email_attempts")
+
+  // Race Day Check-in
+  checkedIn             Boolean       @default(false) @map("checked_in")
+  checkedInAt           DateTime?     @map("checked_in_at") @db.Timestamptz
+  checkedInBy           String?       @map("checked_in_by")
+
+  // Admin Manual Approval / Notes
+  adminNote             String?       @map("admin_note")
+  manuallyApproved      Boolean       @default(false) @map("manually_approved")
+  manuallyApprovedBy    String?       @map("manually_approved_by")
+  manuallyApprovedAt    DateTime?     @map("manually_approved_at") @db.Timestamptz
+
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  checkinLogs           CheckinLog[]
+
+  @@index([paymentStatus], name: "idx_reg_payment_status")
+  @@index([razorpayOrderId], name: "idx_reg_razorpay_order")
+  @@index([ticketId], name: "idx_reg_ticket_id")
+  @@index([qrToken], name: "idx_reg_qr_token")
+  @@index([transactionId], name: "idx_reg_transaction_id")
+  @@index([email], name: "idx_reg_email")
+  @@map("registrations")
+}
+
+// ─── Check-In Audit Logs ───────────────────────────────────────────────────────
+model CheckinLog {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  registrationId String?       @map("registration_id") @db.Uuid
+  scannedToken   String        @map("scanned_token")
+  method         CheckinMethod @map("method")
+  result         CheckinResult @map("result")
+  adminId        String?       @map("admin_id")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  registration   Registration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+
+  @@map("checkin_logs")
+}
+
+// ─── Webhook Events (Idempotency) ──────────────────────────────────────────────
+model WebhookEvent {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  razorpayEventId String   @unique @map("razorpay_event_id")
+  eventType       String   @map("event_type")
+  payload         Json?    @map("payload")
+  processedAt     DateTime @default(now()) @map("processed_at") @db.Timestamptz
+
+  @@map("webhook_events")
+}
+
+// ─── Admin Users ───────────────────────────────────────────────────────────────
+model Admin {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String   @unique @map("email")
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("admins")
+}
+
+// ─── BIB Number Counters Per Category ──────────────────────────────────────────
+model BibCounter {
+  categoryId String @id @map("category_id")
+  nextBib    Int    @default(1) @map("next_bib")
+
+  @@map("bib_counters")
+}

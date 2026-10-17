@@ -59,7 +59,7 @@ export interface CheckInResult {
 
 const inMemoryRegistrations = new Map<string, RegistrationRecord>();
 const inMemoryBibCounters: Record<string, number> = {
-  '3k_fun': 1002, '5k': 2003, '10k': 3002, '15k': 4002
+  '3k_fun': 1002, '5k': 2003, '15k': 4002
 };
 const inMemoryWebhookEvents = new Set<string>();
 
@@ -405,7 +405,7 @@ function createTransporter() {
 }
 
 const categoryFlagTimes: Record<string, string> = {
-  '3k_fun': '7:00 AM', '5k': '6:30 AM', '10k': '6:00 AM', '15k': '5:30 AM'
+  '3k_fun': '7:00 AM', '5k': '6:30 AM', '15k': '5:30 AM'
 };
 
 async function sendTicketEmail(reg: RegistrationRecord, qrBuffer: Buffer): Promise<boolean> {
@@ -834,20 +834,24 @@ export class RegistrationService {
     // Strip BR26. prefix if present
     const qrContent = clean.startsWith('BR26.') ? clean.replace('BR26.', '') : null;
 
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clean);
+    const orClauses: string[] = [
+      `qr_token.eq.${qrContent || clean}`,
+      `razorpay_payment_id.eq.${clean}`,
+      `transaction_id.eq.${clean}`,
+      `registration_number.eq.${clean}`,
+      `razorpay_order_id.eq.${clean}`
+    ];
+    if (isUuid) {
+      orClauses.push(`id.eq.${clean}`, `ticket_id.eq.${clean}`);
+    }
+
     if (supabase) {
       try {
         const { data, error } = await supabase
           .from('registrations')
           .select('*')
-          .or([
-            `id.eq.${clean}`,
-            `qr_token.eq.${qrContent || clean}`,
-            `ticket_id.eq.${clean}`,
-            `razorpay_payment_id.eq.${clean}`,
-            `transaction_id.eq.${clean}`,
-            `registration_number.eq.${clean}`,
-            `razorpay_order_id.eq.${clean}`
-          ].join(','));
+          .or(orClauses.join(','));
 
         if (!error && data && data.length > 0) return mapRow(data[0]);
       } catch (e: any) {
@@ -893,6 +897,7 @@ export class RegistrationService {
     ) => {
       if (supabase) {
         await supabase.from('checkin_logs').insert({
+          id: randomUUID(),
           registration_id: registrationId,
           scanned_token: clean,
           method,

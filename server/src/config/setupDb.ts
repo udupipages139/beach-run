@@ -92,7 +92,6 @@ CREATE TABLE IF NOT EXISTS bib_counters (
 INSERT INTO bib_counters (category_id, next_bib) VALUES
   ('3k_fun', 1001),
   ('5k',     2001),
-  ('10k',    3001),
   ('15k',    4001)
 ON CONFLICT (category_id) DO NOTHING;
 

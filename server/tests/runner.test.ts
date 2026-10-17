@@ -59,7 +59,7 @@ async function runTestSuite() {
   // ─────────────────────────────────────────────────────────────────────────────
   console.log('\n--- Test Suite 2: Age Eligibility Validation ---');
   {
-    const ageRules: Record<string, number> = { '5k': 12, '10k': 16, '15k': 18 };
+    const ageRules: Record<string, number> = { '5k': 12, '15k': 18 };
 
     const checkEligibility = (categoryId: string, age: number): boolean => {
       const minAge = ageRules[categoryId];
@@ -75,11 +75,6 @@ async function runTestSuite() {
     assert(!checkEligibility('5k', 11), '5K rejects age 11 (minimum is 12)');
     assert(checkEligibility('5k', 12), '5K accepts age 12 (exact boundary)');
     assert(checkEligibility('5k', 25), '5K accepts age 25');
-
-    // 10K: minimum 16
-    assert(!checkEligibility('10k', 15), '10K rejects age 15 (minimum is 16)');
-    assert(checkEligibility('10k', 16), '10K accepts age 16 (exact boundary)');
-    assert(checkEligibility('10k', 30), '10K accepts age 30');
 
     // 15K: minimum 18
     assert(!checkEligibility('15k', 17), '15K rejects age 17 (minimum is 18)');
@@ -98,12 +93,12 @@ async function runTestSuite() {
       email: 'sunil.g@example.com',
       phone: '9845012345',
       age: 32,
-      categoryId: '10k',
-      categoryName: '10K Run',
+      categoryId: '15k',
+      categoryName: '15K Run',
       tshirtSize: 'L',
       emergencyContactName: 'Marshneill Gavaskar',
       emergencyContactPhone: '9845012346',
-      amountINR: 799,
+      amountINR: 999,
       razorpayOrderId: orderId
     });
 
@@ -234,12 +229,12 @@ async function runTestSuite() {
       email: 'milkha.s@example.com',
       phone: '9811122233',
       age: 35,
-      categoryId: '10k',
-      categoryName: '10K Run',
+      categoryId: '5k',
+      categoryName: '5K Run',
       tshirtSize: 'L',
       emergencyContactName: 'Nirmal Kaur',
       emergencyContactPhone: '9811122234',
-      amountINR: 799,
+      amountINR: 599,
       razorpayOrderId: orderId
     });
 
