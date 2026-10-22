@@ -159,6 +159,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
 
+  const getAuthHeaders = useCallback((extra: Record<string, string> = {}) => {
+    const headers: Record<string, string> = { ...extra };
+    const token = authToken || sessionStorage.getItem('ubr_admin_jwt');
+    if (token && token !== 'session' && token !== 'dev') {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }, [authToken]);
+
   const handleLogin = async (email: string, password: string): Promise<string | null> => {
     try {
       const res = await fetch(`${API_URL}/admin/login`, {
@@ -169,8 +178,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
       });
       const data = await safeFetchJson(res);
       if (res.ok && data.success) {
-        sessionStorage.setItem('ubr_admin_jwt', 'session');
-        setAuthToken('session');
+        const token = data.token || 'session';
+        sessionStorage.setItem('ubr_admin_jwt', token);
+        setAuthToken(token);
         return null;
       }
       return data.error || 'Login failed';
@@ -196,8 +206,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
     setLoading(true);
     setErrorMsg(null);
     try {
-      const res = await fetch(`${API_URL}/admin/registrations`, { credentials: 'include' });
+      const res = await fetch(`${API_URL}/admin/registrations`, {
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      });
       const data = await safeFetchJson(res);
+      if (res.status === 401) {
+        sessionStorage.removeItem('ubr_admin_jwt');
+        setAuthToken(null);
+        setErrorMsg('Session expired or unauthorized. Please log in again.');
+        return;
+      }
       if (res.ok && data.success) {
         setRegistrations(data.registrations || []);
         setStats(data.stats || null);
@@ -210,7 +229,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getAuthHeaders]);
 
   useEffect(() => { if (authToken) fetchRegistrations(); }, [authToken, fetchRegistrations]);
 
@@ -223,7 +242,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
 
   const handleResendEmail = async (id: string) => {
     try {
-      const res = await fetch(`${API_URL}/admin/registrations/${id}/resend`, { method: 'POST', credentials: 'include' });
+      const res = await fetch(`${API_URL}/admin/registrations/${id}/resend`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      });
       const data = await safeFetchJson(res);
       showAction(data.emailSent ? 'ok' : 'err', data.message || 'Resend attempted');
     } catch (_) { showAction('err', 'Resend failed'); }
@@ -233,8 +256,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
     if (!window.confirm('Manually approve and issue ticket for this registration?')) return;
     try {
       const res = await fetch(`${API_URL}/admin/registrations/${id}/approve`, {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        credentials: 'include',
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ note: 'Admin manual approval via dashboard' })
       });
       const data = await safeFetchJson(res);
@@ -253,6 +277,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
 
       const res = await fetch(`${API_URL}/registrations/${selectedScreenshotReg.id}/screenshot`, {
         method: 'POST',
+        headers: getAuthHeaders(),
         body: formData
       });
       const data = await safeFetchJson(res);
@@ -275,7 +300,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
   };
 
   const exportCSV = async () => {
-    window.open(`${API_URL}/admin/export.csv`, '_blank');
+    const token = authToken || sessionStorage.getItem('ubr_admin_jwt');
+    const query = token && token !== 'session' && token !== 'dev' ? `?token=${encodeURIComponent(token)}` : '';
+    window.open(`${API_URL}/admin/export.csv${query}`, '_blank');
   };
 
   // ─── Filter ───────────────────────────────────────────────────────────────
@@ -306,7 +333,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
   // ─── Scanner View ─────────────────────────────────────────────────────────
 
   if (currentView === 'scanner') {
-    return <GateScanner onBack={() => setCurrentView('dashboard')} />;
+    return <GateScanner authToken={authToken || undefined} onBack={() => setCurrentView('dashboard')} />;
   }
 
   // ─── Header ───────────────────────────────────────────────────────────────

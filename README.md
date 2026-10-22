@@ -219,6 +219,15 @@ npm run test:webhook --prefix server
 
 # Test SMTP email connection and send a test email
 npm run test:smtp --prefix server [recipient_email]
+
+# Verify database connection and view registered count
+npm run db:check --prefix server
+
+# Query database records via Prisma ORM
+npm run db:prisma --prefix server
+
+# Launch Prisma Studio web GUI
+cd server && npx prisma studio
 ```
 
 ---

@@ -59,14 +59,20 @@ export const adminLoginController = async (req: Request, res: Response) => {
 
     const token = jwt.sign({ adminId, email }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
 
+    const isProd = process.env.NODE_ENV === 'production';
     res.cookie('ubr_admin_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 8 * 60 * 60 * 1000 // 8h
     });
 
-    return res.status(200).json({ success: true, message: 'Logged in successfully', adminId });
+    return res.status(200).json({
+      success: true,
+      message: 'Logged in successfully',
+      adminId,
+      token
+    });
   } catch (error: any) {
     console.error('[AdminController] Login error:', error);
     return res.status(500).json({ success: false, error: 'Login failed' });
