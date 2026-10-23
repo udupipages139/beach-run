@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 interface NavbarProps {
-  currentView?: 'home' | 'blog' | 'gallery' | 'route-map';
-  onNavigate?: (view: 'home' | 'blog' | 'gallery' | 'route-map', targetSection?: string) => void;
+  currentView?: string;
+  onNavigate?: (view: any, targetSection?: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ currentView = 'home', onNavigate }) => {

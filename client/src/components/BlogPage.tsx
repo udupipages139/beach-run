@@ -1,5 +1,4 @@
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Newspaper,
   Calendar,
@@ -8,129 +7,14 @@ import {
   X,
   Search,
   ArrowLeft,
-  Share2,
   Bookmark,
   User,
   Filter,
   TrendingUp,
   CheckCircle2
 } from 'lucide-react';
-
-export interface Article {
-  id: string;
-  title: string;
-  category: string;
-  date: string;
-  readTime: string;
-  image: string;
-  excerpt: string;
-  content: string[];
-  author: string;
-  authorRole: string;
-  featured?: boolean;
-}
-
-export const allArticles: Article[] = [
-  {
-    id: '1',
-    title: '15KM Coastal Clean-Up Drive Launched Ahead of Marathon Day',
-    category: 'ENVIRONMENTAL ACTION',
-    date: 'OCT 12, 2026',
-    readTime: '4 MIN READ',
-    image: '/images/hero_section/udupipages-Beach-Run1.jpg.jpeg',
-    excerpt: 'Community volunteers, local schools, and NGOs unite to clear marine debris and plastic waste along the Padukere to Kapu coastline.',
-    content: [
-      'In preparation for the upcoming Udupipages Beach Run 2026, over 400 volunteers gathered along Padukere Ground and Mattu Beach to conduct a massive pre-race coastal cleanup.',
-      'The initiative removed over 1.2 metric tons of discarded ocean plastic, ghost nets, and debris from the sensitive sand dunes. Organizers confirmed that 100% of collected plastics will be processed by local recycling partners.',
-      'Event Director announced: "Our goal is zero plastic footprint on race day. Every runner will be provided eco-friendly compostable hydration cups and stainless steel refilling stations."',
-      'Through local school engagement programs, young coastal ambassadors were also awarded Certificates of Environmental Leadership for logging 120+ collective hours of dune restoration.'
-    ],
-    author: 'Udupipages Marine Team',
-    authorRole: 'Ecological Conservation Unit',
-    featured: true
-  },
-  {
-    id: '2',
-    title: 'Pacing & Hydration Strategy for Udupi’s High-Humidity Coastal Trail',
-    category: 'TRAINING & PERFORMANCE',
-    date: 'NOV 02, 2026',
-    readTime: '6 MIN READ',
-    image: '/images/hero_section/udupipages-Beach-Run2.jpg.jpeg',
-    excerpt: 'Mastering the ocean breeze, sand dune traction, and early morning humidity along Karnataka’s coastal corridor.',
-    content: [
-      'Running on beach sand and coastal asphalt requires a unique pacing strategy. The Udupipages 15K route features firm packed sand near the waterline and paved coastal roads near Kapu.',
-      'Experts recommend starting conservatively at Padukere Ground during the 5:30 AM flag-off. Hydration stations will be positioned every 2.5KM featuring fresh tender coconut water and isotonic electrolyte solutions.',
-      'Maintain an upright posture when navigating dune shifts and adjust stride length by 10% to prevent excessive calf fatigue.',
-      'Pre-race nutrition should emphasize complex carbohydrates eaten 2.5 hours prior to flag-off, combined with gradual hydration starting 48 hours before race morning.'
-    ],
-    author: 'Coach Rajesh Shetty',
-    authorRole: 'Head Marathon Strategist'
-  },
-  {
-    id: '3',
-    title: 'Official Route Breakdown: Padukere Ground to Kapu Light House',
-    category: 'COURSE INSIGHTS',
-    date: 'NOV 18, 2026',
-    readTime: '5 MIN READ',
-    image: '/images/hero_section/udupipages-Beach-Run3.jpg.jpeg',
-    excerpt: 'A mile-by-mile guide to Udupi’s most scenic coastal running track where fresh river estuaries meet the Arabian Sea.',
-    content: [
-      'The 2026 course is widely considered one of India’s most scenic coastal marathon tracks. Starting at Padukere Ground, runners head south along the sea wall toward Padukare School Ground (3K turnaround).',
-      'Continuing past Blue Wave Warriors (5K checkpoint) and Mattu Beach (10K milestone), the route culminates under the shadow of the historic 1901 Kapu Light House.',
-      'Spectator cheer zones will be established at key junctions with traditional Yakshagana drum beats cheering runners toward the finish line.'
-    ],
-    author: 'Udupipages Logistics',
-    authorRole: 'Technical Race Committee'
-  },
-  {
-    id: '4',
-    title: 'Preserving Karnataka’s Marine Ecosystem Through Community Athletics',
-    category: 'COMMUNITY IMPACT',
-    date: 'NOV 28, 2026',
-    readTime: '4 MIN READ',
-    image: '/images/hero_section/udupipages-Beach-Run4.jpg.jpeg',
-    excerpt: 'How sports tourism is driving long-term policy changes for coastal waste management in Udupi district.',
-    content: [
-      'The Udupipages Beach Run is more than an athletic event—it is a sustainable movement. Proceeds from race registrations directly fund year-round beach maintenance and river-to-sea waste filtration units.',
-      'Local panchayats and tourism boards have partnered with the event to install permanent solar-powered waste bins across Padukere, Mattu, and Kapu beaches.',
-      'Together, athletes, citizens, and tourists are proving that sports can be the catalyst for lasting ecological preservation.'
-    ],
-    author: 'Environmental Advisory',
-    authorRole: 'Public Policy Desk'
-  },
-  {
-    id: '5',
-    title: 'Gear Guide: Shoes, Compression Wear & Sunglasses for Beach Sand',
-    category: 'TRAINING & PERFORMANCE',
-    date: 'DEC 01, 2026',
-    readTime: '5 MIN READ',
-    image: '/images/hero_section/udupipages-Beach-Run5.jpg.jpeg',
-    excerpt: 'Selecting the optimal footwear and anti-glare eyewear for morning shoreline reflection.',
-    content: [
-      'Selecting the correct gear can mean the difference between a comfortable finish and blistering sand friction. Road racing flats with tight mesh uppers prevent coarse beach sand intrusion.',
-      'UV-blocking polarized sunglasses are strongly recommended to defend against harsh morning sun glares reflecting off coastal ocean waves.',
-      'High-ankle performance socks woven with anti-friction moisture-wicking yarn ensure feet remain dry through tide sprays and water stations.'
-    ],
-    author: 'Vinay Kumar',
-    authorRole: 'Technical Equipment Analyst'
-  },
-  {
-    id: '6',
-    title: 'Post-Race Recovery: Cold Ocean Plunge & Traditional Udupi Cuisine',
-    category: 'COMMUNITY IMPACT',
-    date: 'DEC 03, 2026',
-    readTime: '4 MIN READ',
-    image: '/images/gallery/ashish-thanthry-Y8G0AHhbr1A-unsplash.jpg',
-    excerpt: 'Harness natural sea water cryotherapy and nutrient-dense coastal superfoods after crossing the Kapu finish line.',
-    content: [
-      'Crossing the finish line at Kapu Light House is just the beginning of your recovery process. Medical staff advocate an immediate 10-minute natural ocean leg dip to accelerate muscle inflammation reduction.',
-      'Finish line hospitality tents will serve freshly harvested coastal tender coconuts, warm spiced rasam, and protein-packed local grain breakfast bowls specially formulated for runner glycogen replenishment.',
-      'Massage zones staffed by licensed sports physiotherapists will be operating non-stop from 7:00 AM to 11:30 AM.'
-    ],
-    author: 'Dr. Ananya Rao',
-    authorRole: 'Chief Medical Coordinator'
-  }
-];
+import { BlogPost, blogArticles } from '../data/blogArticles';
+import { BlogPostDetail } from './BlogPostDetail';
 
 interface BlogPageProps {
   onBackToHome: () => void;
@@ -140,9 +24,9 @@ interface BlogPageProps {
 export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticleId }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(() => {
+  const [selectedArticle, setSelectedArticle] = useState<BlogPost | null>(() => {
     if (initialArticleId) {
-      return allArticles.find((a) => a.id === initialArticleId) || null;
+      return blogArticles.find((a) => a.id === initialArticleId || a.slug === initialArticleId) || null;
     }
     return null;
   });
@@ -150,19 +34,19 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
   const [subscribed, setSubscribed] = useState(false);
   const [emailInput, setEmailInput] = useState('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialArticleId) {
-      const art = allArticles.find((a) => a.id === initialArticleId);
+      const art = blogArticles.find((a) => a.id === initialArticleId || a.slug === initialArticleId);
       if (art) {
         setSelectedArticle(art);
       }
     }
   }, [initialArticleId]);
 
-  const categories = ['ALL', 'ENVIRONMENTAL ACTION', 'TRAINING & PERFORMANCE', 'COURSE INSIGHTS', 'COMMUNITY IMPACT'];
+  const categories = ['ALL', 'TRAINING & PERFORMANCE', 'ENVIRONMENTAL ACTION', 'COMMUNITY & EVENT', 'COURSE INSIGHTS', 'COMMUNITY IMPACT'];
 
   const filteredArticles = useMemo(() => {
-    return allArticles.filter((art) => {
+    return blogArticles.filter((art) => {
       const matchesCat = selectedCategory === 'ALL' || art.category === selectedCategory;
       const matchesSearch =
         art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -173,7 +57,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
   }, [selectedCategory, searchQuery]);
 
   const featuredArticle = useMemo(() => {
-    return allArticles.find((a) => a.featured) || allArticles[0];
+    return blogArticles.find((a) => a.featured) || blogArticles[0];
   }, []);
 
   const toggleBookmark = (id: string, e: React.MouseEvent) => {
@@ -190,6 +74,34 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
       setEmailInput('');
     }
   };
+
+  // If an article is selected, render the dedicated full-page reading experience!
+  if (selectedArticle) {
+    return (
+      <BlogPostDetail
+        post={selectedArticle}
+        onBackToBlog={() => {
+          setSelectedArticle(null);
+          window.location.hash = 'blog-page';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onNavigateToPost={(postId) => {
+          const next = blogArticles.find((a) => a.id === postId || a.slug === postId);
+          if (next) {
+            setSelectedArticle(next);
+            window.location.hash = `blog-page-${next.id}`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }}
+        onRegisterClick={() => {
+          onBackToHome();
+          setTimeout(() => {
+            document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' });
+          }, 150);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-[#0A0A0A] font-sans pb-24 pt-20">
@@ -208,7 +120,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
           <div className="flex items-center space-x-3 text-xs text-slate-500 font-mono">
             <span>UDUPIPAGES OFFICIAL BULLETIN</span>
             <span>•</span>
-            <span className="text-[#00A3FF] font-bold">{allArticles.length} ARTICLES PUBLISHED</span>
+            <span className="text-[#00A3FF] font-bold">{blogArticles.length} STORIES PUBLISHED</span>
           </div>
         </div>
       </div>
@@ -222,10 +134,10 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
             <span>OFFICIAL RACE JOURNAL & PRESS DESK</span>
           </div>
           <h1 className="font-thunder text-4xl sm:text-6xl md:text-7xl font-extrabold text-[#0A0A0A] uppercase tracking-wide">
-            UDUPI BEACH RUN <span className="text-gradient">BLOG & NEWS</span>
+            UDUPI BEACH RUN <span className="text-gradient">BLOG & STORIES</span>
           </h1>
           <p className="text-sm sm:text-base text-slate-600 font-normal max-w-3xl leading-relaxed">
-            In-depth coverage on coastal preservation, marathon logistics, elite training strategies, and real-time announcements for Udupipages Beach Run 2026.
+            In-depth guides on coastal sand training, biomechanics, environmental conservation, and official updates for Udupipages Beach Run 2026.
           </p>
         </div>
 
@@ -276,10 +188,14 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
                   </div>
 
                   <button
-                    onClick={() => setSelectedArticle(featuredArticle)}
+                    onClick={() => {
+                      setSelectedArticle(featuredArticle);
+                      window.location.hash = `blog-page-${featuredArticle.id}`;
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
                     className="px-5 py-2.5 bg-sunset-gradient text-white font-sans text-xs uppercase font-extrabold tracking-wider hover:opacity-95 flex items-center space-x-2"
                   >
-                    <span>READ FEATURED</span>
+                    <span>READ ARTICLE</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -355,7 +271,11 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
               return (
                 <article
                   key={art.id}
-                  onClick={() => setSelectedArticle(art)}
+                  onClick={() => {
+                    setSelectedArticle(art);
+                    window.location.hash = `blog-page-${art.id}`;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
                   className="group cursor-pointer bg-white border border-slate-200 hover:border-[#00A3FF] transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-md"
                 >
                   <div>
@@ -388,9 +308,9 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
                     {/* Meta & Title */}
                     <div className="p-6 space-y-3">
                       <div className="flex items-center space-x-3 text-[11px] text-slate-500 font-mono">
-                        <span className="flex items-center"><Calendar className="w-3 h-3 text-[#00A3FF] mr-1" /> {art.date}</span>
+                        <span className="flex items-center"><Calendar className="w-3.5 h-3.5 text-[#00A3FF] mr-1" /> {art.date}</span>
                         <span>•</span>
-                        <span className="flex items-center"><Clock className="w-3 h-3 text-[#00A3FF] mr-1" /> {art.readTime}</span>
+                        <span className="flex items-center"><Clock className="w-3.5 h-3.5 text-[#00A3FF] mr-1" /> {art.readTime}</span>
                       </div>
 
                       <h3 className="font-thunder text-2xl text-[#0A0A0A] group-hover:text-[#00A3FF] transition-colors leading-tight">
@@ -427,7 +347,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
               GET THE LATEST RACE ANNOUNCEMENTS DIRECT TO YOUR INBOX
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-              Receive route updates, medical tips, weather forecasts, and bib collection notifications directly from the Udupipages Organizing Committee.
+              Receive route updates, training guides, and race-day logistics directly from the Udupipages Organizing Committee.
             </p>
 
             {subscribed ? (
@@ -457,86 +377,6 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
         </div>
 
       </div>
-
-      {/* Article Detail Full Modal */}
-      <AnimatePresence>
-        {selectedArticle && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white border border-slate-200 max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-10 space-y-6 relative shadow-2xl"
-            >
-              <button
-                onClick={() => setSelectedArticle(null)}
-                className="absolute top-4 right-4 p-2 text-slate-600 hover:text-black bg-slate-100 border border-slate-300 transition-colors"
-                aria-label="Close Article"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="space-y-2">
-                <span className="inline-block text-xs font-mono text-[#00A3FF] uppercase font-bold tracking-widest bg-sky-50 px-3 py-1 border border-sky-200">
-                  {selectedArticle.category}
-                </span>
-                <h2 className="font-thunder text-3xl sm:text-5xl text-[#0A0A0A] leading-tight">
-                  {selectedArticle.title}
-                </h2>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 border-y border-slate-200 py-3 font-mono gap-2">
-                <div>
-                  <span className="font-bold text-[#0A0A0A]">BY {selectedArticle.author.toUpperCase()}</span>
-                  <span className="text-slate-400 block text-[10px]">{selectedArticle.authorRole}</span>
-                </div>
-                <div>{selectedArticle.date} • {selectedArticle.readTime}</div>
-              </div>
-
-              <div className="h-64 sm:h-80 w-full overflow-hidden bg-slate-900 border border-slate-200">
-                <img
-                  src={selectedArticle.image}
-                  alt={selectedArticle.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div className="space-y-4 text-sm sm:text-base text-slate-700 font-normal leading-relaxed border-b border-slate-200 pb-6">
-                {selectedArticle.content.map((paragraph, idx) => (
-                  <p key={idx}>{paragraph}</p>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between pt-2">
-                <button
-                  onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({
-                        title: selectedArticle.title,
-                        url: window.location.href,
-                      }).catch(() => {});
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                      alert('Article link copied to clipboard!');
-                    }
-                  }}
-                  className="inline-flex items-center space-x-2 text-xs font-bold text-slate-600 hover:text-[#00A3FF] uppercase tracking-wider"
-                >
-                  <Share2 className="w-4 h-4 text-[#00A3FF]" />
-                  <span>SHARE STORY</span>
-                </button>
-
-                <button
-                  onClick={() => setSelectedArticle(null)}
-                  className="px-6 py-2.5 bg-sunset-gradient text-white font-sans text-xs uppercase font-extrabold tracking-wider hover:opacity-95"
-                >
-                  CLOSE STORY
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

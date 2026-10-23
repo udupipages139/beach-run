@@ -15,8 +15,19 @@ import { BlogPage } from './components/BlogPage';
 import { GalleryPage } from './components/GalleryPage';
 import { RouteMapPage } from './components/RouteMapPage';
 import { AdminDashboard } from './components/AdminDashboard';
+import { TrainingTipsPage } from './components/pages/TrainingTipsPage';
+import { HealthAndBeachesPage } from './components/pages/HealthAndBeachesPage';
+import { WhyCoastlineCallingPage } from './components/pages/WhyCoastlineCallingPage';
 
-type ViewState = 'home' | 'blog' | 'gallery' | 'route-map' | 'admin';
+type ViewState =
+  | 'home'
+  | 'blog'
+  | 'gallery'
+  | 'route-map'
+  | 'admin'
+  | 'training-tips'
+  | 'health-and-beaches'
+  | 'why-coastline-calling';
 
 export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('home');
@@ -41,11 +52,38 @@ export const App: React.FC = () => {
 
       if (isAdmin) {
         setCurrentView('admin');
-      } else if (hash.startsWith('#blog-page') || hash === '#blog') {
+      } else if (
+        hash === '#training-tips' ||
+        hash === '#conquering-the-sand' ||
+        pathname.includes('/training-tips') ||
+        pathname.includes('/conquering-the-sand')
+      ) {
+        setCurrentView('training-tips');
+      } else if (
+        hash === '#health-and-beaches' ||
+        hash === '#run-for-health' ||
+        hash === '#run-for-health-protect-beaches' ||
+        pathname.includes('/run-for-health')
+      ) {
+        setCurrentView('health-and-beaches');
+      } else if (
+        hash === '#why-coastline-calling' ||
+        hash === '#why-udupis-coastline-is-calling-you' ||
+        pathname.includes('/why-coastline') ||
+        pathname.includes('/why-udupi')
+      ) {
+        setCurrentView('why-coastline-calling');
+      } else if (hash.startsWith('#blog-page') || hash.startsWith('#blog-') || hash === '#blog' || pathname.startsWith('/blog')) {
         setCurrentView('blog');
-        const match = hash.match(/#blog-page-(.+)/);
-        if (match) {
-          setSelectedArticleId(match[1]);
+        const matchPage = hash.match(/#blog-page-(.+)/);
+        const matchDirect = hash.match(/#blog-(.+)/);
+        if (matchPage) {
+          setSelectedArticleId(matchPage[1]);
+        } else if (matchDirect && matchDirect[1] !== 'page') {
+          setSelectedArticleId(matchDirect[1]);
+        } else if (pathname.startsWith('/blog/')) {
+          const slug = pathname.replace('/blog/', '').replace(/\/$/, '');
+          if (slug) setSelectedArticleId(slug);
         }
       } else if (hash === '#gallery-page' || hash === '#gallery-all') {
         setCurrentView('gallery');
@@ -55,6 +93,7 @@ export const App: React.FC = () => {
         setCurrentView('home');
       }
     };
+
 
     handleUrlRouting();
     window.addEventListener('hashchange', handleUrlRouting);
@@ -73,6 +112,15 @@ export const App: React.FC = () => {
     } else if (view === 'blog') {
       setSelectedArticleId(targetSectionOrArticleId || null);
       window.location.hash = targetSectionOrArticleId ? `blog-page-${targetSectionOrArticleId}` : 'blog-page';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (view === 'training-tips') {
+      window.location.hash = 'training-tips';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (view === 'health-and-beaches') {
+      window.location.hash = 'health-and-beaches';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (view === 'why-coastline-calling') {
+      window.location.hash = 'why-coastline-calling';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (view === 'gallery') {
       window.location.hash = 'gallery-page';
@@ -131,6 +179,27 @@ export const App: React.FC = () => {
         />
       )}
 
+      {currentView === 'training-tips' && (
+        <TrainingTipsPage
+          onBackToHome={() => navigateTo('home')}
+          onNavigateToPost={(id) => navigateTo('blog', id)}
+        />
+      )}
+
+      {currentView === 'health-and-beaches' && (
+        <HealthAndBeachesPage
+          onBackToHome={() => navigateTo('home')}
+          onNavigateToPost={(id) => navigateTo('blog', id)}
+        />
+      )}
+
+      {currentView === 'why-coastline-calling' && (
+        <WhyCoastlineCallingPage
+          onBackToHome={() => navigateTo('home')}
+          onNavigateToPost={(id) => navigateTo('blog', id)}
+        />
+      )}
+
       {currentView === 'gallery' && (
         <GalleryPage onBackToHome={() => navigateTo('home')} />
       )}
@@ -143,6 +212,7 @@ export const App: React.FC = () => {
     </div>
   );
 };
+
 
 export default App;
 

@@ -1,89 +1,15 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Newspaper, Calendar, Clock, ArrowRight, X } from 'lucide-react';
-
-interface Article {
-  id: string;
-  title: string;
-  category: string;
-  date: string;
-  readTime: string;
-  image: string;
-  excerpt: string;
-  content: string[];
-  author: string;
-}
-
-const articles: Article[] = [
-  {
-    id: '1',
-    title: '15KM Coastal Clean-Up Drive Launched Ahead of Marathon Day',
-    category: 'ENVIRONMENTAL ACTION',
-    date: 'OCT 12, 2026',
-    readTime: '4 MIN READ',
-    image: '/images/hero_section/udupipages-Beach-Run1.jpg.jpeg',
-    excerpt: 'Community volunteers, local schools, and NGOs unite to clear marine debris and plastic waste along the Padukere to Kapu coastline.',
-    content: [
-      'In preparation for the upcoming Udupipages Beach Run 2026, over 400 volunteers gathered along Padukere Ground and Mattu Beach to conduct a massive pre-race coastal cleanup.',
-      'The initiative removed over 1.2 metric tons of discarded ocean plastic, ghost nets, and debris from the sensitive sand dunes. Organizers confirmed that 100% of collected plastics will be processed by local recycling partners.',
-      'Event Director announced: "Our goal is zero plastic footprint on race day. Every runner will be provided eco-friendly compostable hydration cups and stainless steel refilling stations."'
-    ],
-    author: 'Udupipages Marine Conservation Team'
-  },
-  {
-    id: '2',
-    title: 'Pacing & Hydration Strategy for Udupi’s High-Humidity Coastal Trail',
-    category: 'TRAINING & PERFORMANCE',
-    date: 'NOV 02, 2026',
-    readTime: '6 MIN READ',
-    image: '/images/hero_section/udupipages-Beach-Run2.jpg.jpeg',
-    excerpt: 'Mastering the ocean breeze, sand dune traction, and early morning humidity along Karnataka’s coastal corridor.',
-    content: [
-      'Running on beach sand and coastal asphalt requires a unique pacing strategy. The Udupipages 15K route features firm packed sand near the waterline and paved coastal roads near Kapu.',
-      'Experts recommend starting conservatively at Padukere Ground during the 5:30 AM flag-off. Hydration stations will be positioned every 2.5KM featuring coconut water and electrolyte mixes.',
-      'Maintain an upright posture when navigating dune shifts and adjust stride length by 10% to prevent excessive calf fatigue.'
-    ],
-    author: 'Coach Rajesh Shetty, Coastal Marathon Club'
-  },
-  {
-    id: '3',
-    title: 'Official Route Breakdown: Padukere Ground to Kapu Light House',
-    category: 'COURSE INSIGHTS',
-    date: 'NOV 18, 2026',
-    readTime: '5 MIN READ',
-    image: '/images/hero_section/udupipages-Beach-Run3.jpg.jpeg',
-    excerpt: 'A mile-by-mile guide to Udupi’s most scenic coastal running track where fresh river estuaries meet the Arabian Sea.',
-    content: [
-      'The 2026 course is widely considered one of India’s most scenic coastal marathon tracks. Starting at Padukere Ground, runners head south along the sea wall toward Padukare School Ground (3K turnaround).',
-      'Continuing past Blue Wave Warriors (5K checkpoint) and Mattu Beach (10K milestone), the route culminates under the shadow of the historic 1901 Kapu Light House.',
-      'Spectator cheer zones will be established at key junctions with traditional Yakshagana drum beats cheering runners toward the finish line.'
-    ],
-    author: 'Udupipages Logistics Committee'
-  },
-  {
-    id: '4',
-    title: 'Preserving Karnataka’s Marine Ecosystem Through Community Athletics',
-    category: 'COMMUNITY IMPACT',
-    date: 'NOV 28, 2026',
-    readTime: '4 MIN READ',
-    image: '/images/hero_section/udupipages-Beach-Run4.jpg.jpeg',
-    excerpt: 'How sports tourism is driving long-term policy changes for coastal waste management in Udupi district.',
-    content: [
-      'The Udupipages Beach Run is more than an athletic event—it is a sustainable movement. Proceeds from race registrations directly fund year-round beach maintenance and river-to-sea waste filtration units.',
-      'Local panchayats and tourism boards have partnered with the event to install permanent solar-powered waste bins across Padukere, Mattu, and Kapu beaches.',
-      'Together, athletes, citizens, and tourists are proving that sports can be the catalyst for lasting ecological preservation.'
-    ],
-    author: 'Environmental Advisory Council'
-  }
-];
+import React from 'react';
+import { Newspaper, Calendar, Clock, ArrowRight } from 'lucide-react';
+import { blogArticles } from '../data/blogArticles';
 
 interface BlogNewsProps {
   onNavigateToBlog?: (articleId?: string) => void;
 }
 
 export const BlogNews: React.FC<BlogNewsProps> = ({ onNavigateToBlog }) => {
-  // Display only 3 articles on the grid
-  const visibleArticles = articles.slice(0, 3);
+  // Display the 3 official blog articles on the home section
+  const visibleArticles = blogArticles.slice(0, 3);
+
 
   return (
     <section id="news" className="py-20 sm:py-28 bg-white text-[#0A0A0A] border-t border-slate-200 relative">

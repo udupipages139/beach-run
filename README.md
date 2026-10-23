@@ -247,5 +247,28 @@ MAIL_FROM=Udupipages Beach Run 2026 <your-email@gmail.com>
 
 > 💡 **Gmail Tip**: Use a 16-character Google **App Password** (generated from [Google Account Security ➔ App Passwords](https://myaccount.google.com/apppasswords)) with 2-Step Verification enabled, rather than your standard account login password.
 
+---
 
+## 🤝 Partners & External Redirects
 
+The Partners section features official event partners with interactive redirect links (`target="_blank"` with `rel="noopener noreferrer"`):
+- **Udupi Pages** (Organizing & Media Partner): [`https://www.udupipages.in/`](https://www.udupipages.in/) — Asset: `client/public/images/partners/udupipages.jpg`
+- **TechNetMark** (Technology & Digital Partner): [`https://www.technetmark.com/`](https://www.technetmark.com/) — Asset: `client/public/images/partners/technetmark.jpg`
+
+---
+
+## 📰 Official Blog & Dedicated Pages
+
+The blog section and three dedicated article pages feature the complete training, environmental, and event guides:
+1. **Conquering the Sand: Top Training Tips for the Udupipages Beach Run 2026**
+   - URL Route: `/#training-tips` or `/#conquering-the-sand` or `/#blog-page-conquering-the-sand`
+   - Component: `client/src/components/pages/TrainingTipsPage.tsx`
+2. **Run for Health, Run for Our Beaches: How Your Footsteps Help Protect Udupi’s Coast**
+   - URL Route: `/#health-and-beaches` or `/#run-for-health` or `/#blog-page-run-for-health-protect-beaches`
+   - Component: `client/src/components/pages/HealthAndBeachesPage.tsx`
+3. **Why Udupi’s Coastline is Calling You: 5 Reasons to Register for the Udupipages Beach Run 2026**
+   - URL Route: `/#why-coastline-calling` or `/#why-udupis-coastline-is-calling-you` or `/#blog-page-why-udupis-coastline-is-calling-you`
+   - Component: `client/src/components/pages/WhyCoastlineCallingPage.tsx`
+
+Centralized Data Store: [`client/src/data/blogArticles.ts`](client/src/data/blogArticles.ts)
+Dedicated Article Reader: [`client/src/components/BlogPostDetail.tsx`](client/src/components/BlogPostDetail.tsx)
