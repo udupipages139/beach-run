@@ -37,17 +37,13 @@ export const adminLoginController = async (req: Request, res: Response) => {
       }
     }
 
-    // Fallback to credentials check (accepts admin / admin, admin@udupipagesrun.com, or env vars)
+    // Fallback to credentials check configured in environment variables
     if (!isValid) {
       const normalizedInput = email.trim().toLowerCase();
-      const envEmail = (process.env.ADMIN_EMAIL || 'admin').toLowerCase();
-      const envPass = process.env.ADMIN_PASSWORD || 'admin';
+      const envEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+      const envPass = process.env.ADMIN_PASSWORD || '';
 
-      if (
-        (normalizedInput === 'admin' && (password === 'admin' || password === 'admin123')) ||
-        (normalizedInput === 'admin@udupipagesrun.com' && (password === 'admin' || password === 'admin123')) ||
-        (normalizedInput === envEmail && password === envPass)
-      ) {
+      if (envEmail && envPass && normalizedInput === envEmail && password === envPass) {
         isValid = true;
         adminId = 'admin_master';
       }

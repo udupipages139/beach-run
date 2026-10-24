@@ -79,8 +79,8 @@ const LoginForm: React.FC<{
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans text-slate-900">
+      <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6 text-slate-900">
         <div className="text-center space-y-2">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#FF7A30] to-[#FFB347] flex items-center justify-center mx-auto shadow-lg">
             <Lock className="w-7 h-7 text-white" />
@@ -102,8 +102,8 @@ const LoginForm: React.FC<{
             <div className="relative">
               <UserCheck className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input type="text" required value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="admin"
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]" />
+                placeholder="Enter username or email"
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm text-black placeholder:text-slate-400 focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]" />
             </div>
           </div>
           <div>
@@ -111,8 +111,8 @@ const LoginForm: React.FC<{
             <div className="relative">
               <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="admin"
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]" />
+                placeholder="••••••••"
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm text-black placeholder:text-slate-400 focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]" />
             </div>
           </div>
           <button type="submit" disabled={loading}
@@ -185,11 +185,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
       }
       return data.error || 'Login failed';
     } catch (e: any) {
-      if (email === 'admin' && password === 'admin') {
-        sessionStorage.setItem('ubr_admin_jwt', 'dev');
-        setAuthToken('dev');
-        return null;
-      }
       return 'Server unreachable. Check that the backend is running.';
     }
   };
@@ -341,59 +336,124 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
   return (
     <div className="min-h-screen bg-slate-50 text-[#0A0A0A] font-sans">
       {/* Top nav */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3.5 shadow-sm">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-4">
-            <button onClick={onBackToHome}
-              className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3.5 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition-all">
-              <ArrowLeft className="w-4 h-4" /><span>Back to Site</span>
-            </button>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-md bg-gradient-to-tr from-[#FF7A30] to-[#FFB347] flex items-center justify-center shadow-md">
-                <ShieldCheck className="w-5 h-5 text-white" />
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3.5 shadow-sm">
+        <div className="max-w-7xl mx-auto">
+          {/* ─── Mobile Header (sm:hidden) ─── */}
+          <div className="flex sm:hidden flex-col gap-2.5">
+            {/* Top row: Brand + Quick Actions */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#FF7A30] to-[#FFB347] flex items-center justify-center shadow-sm flex-shrink-0">
+                  <ShieldCheck className="w-4 h-4 text-white" />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="font-thunder font-black text-xl tracking-wider leading-none text-[#0A0A0A] truncate">ADMIN DASHBOARD</h1>
+                  <p className="text-[9px] font-mono text-slate-400 tracking-wider uppercase">Beach Run 2026</p>
+                </div>
               </div>
-              <div>
-                <h1 className="font-thunder font-black text-2xl sm:text-3xl tracking-wider leading-none text-[#0A0A0A]">ADMIN DASHBOARD</h1>
-                <p className="text-[11px] font-mono text-slate-500 tracking-wider uppercase">Udupipages Beach Run 2026</p>
+
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <button onClick={fetchRegistrations} disabled={loading}
+                  className="p-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 rounded-lg disabled:opacity-50" title="Refresh data">
+                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                </button>
+                <button onClick={onBackToHome}
+                  className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider">
+                  <ArrowLeft className="w-3.5 h-3.5" /><span>Site</span>
+                </button>
+                <button onClick={handleLogout}
+                  className="p-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-lg" title="Log Out">
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
               </div>
+            </div>
+
+            {/* Middle row: 4 Equal Navigation Tabs */}
+            <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 border border-slate-200 rounded-xl">
+              {([
+                { id: 'dashboard', icon: <LayoutDashboard className="w-3.5 h-3.5" />, label: 'Stats' },
+                { id: 'registrations', icon: <List className="w-3.5 h-3.5" />, label: 'Runners' },
+                { id: 'proofs', icon: <Eye className="w-3.5 h-3.5" />, label: `Proofs${registrationsWithProof.length ? ` (${registrationsWithProof.length})` : ''}` },
+                { id: 'scanner', icon: <Camera className="w-3.5 h-3.5" />, label: 'Scanner' }
+              ] as const).map(tab => (
+                <button key={tab.id} onClick={() => setCurrentView(tab.id)}
+                  className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                    currentView === tab.id
+                      ? 'bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white shadow-sm'
+                      : 'text-slate-600 hover:text-[#FF7A30]'
+                  }`}>
+                  {tab.icon}
+                  <span className="truncate">{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Bottom info row: DB badge + Count */}
+            <div className="flex items-center justify-between text-[10px] font-mono px-1">
+              <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 border ${
+                dbSource === 'supabase' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${dbSource === 'supabase' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                <span>{dbSource === 'supabase' ? 'SUPABASE LIVE' : 'LOCAL STORE'}</span>
+              </div>
+              <span className="text-slate-400 font-semibold">{registrations.length} runners recorded</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap justify-end">
-            {/* DB badge */}
-            <div className={`px-3 py-1.5 rounded-full text-xs font-mono font-bold flex items-center gap-2 border ${
-              dbSource === 'supabase' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'
-            }`}>
-              <span className={`w-2 h-2 rounded-full animate-pulse ${dbSource === 'supabase' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-              <span>{dbSource === 'supabase' ? 'SUPABASE LIVE' : 'LOCAL STORE'}</span>
+          {/* ─── Desktop Header (hidden sm:flex) ─── */}
+          <div className="hidden sm:flex items-center justify-between gap-3">
+            <div className="flex items-center gap-4">
+              <button onClick={onBackToHome}
+                className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3.5 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition-all">
+                <ArrowLeft className="w-4 h-4" /><span>Back to Site</span>
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-md bg-gradient-to-tr from-[#FF7A30] to-[#FFB347] flex items-center justify-center shadow-md">
+                  <ShieldCheck className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="font-thunder font-black text-2xl sm:text-3xl tracking-wider leading-none text-[#0A0A0A]">ADMIN DASHBOARD</h1>
+                  <p className="text-[11px] font-mono text-slate-500 tracking-wider uppercase">Udupipages Beach Run 2026</p>
+                </div>
+              </div>
             </div>
 
-            {/* Nav tabs */}
-            {([
-              { id: 'dashboard', icon: <LayoutDashboard className="w-3.5 h-3.5" />, label: 'Dashboard' },
-              { id: 'registrations', icon: <List className="w-3.5 h-3.5" />, label: 'Runners' },
-              { id: 'proofs', icon: <Eye className="w-3.5 h-3.5" />, label: `Proofs (${registrationsWithProof.length})` },
-              { id: 'scanner', icon: <Camera className="w-3.5 h-3.5" />, label: 'Scanner' }
-            ] as const).map(tab => (
-              <button key={tab.id} onClick={() => setCurrentView(tab.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-all border ${
-                  currentView === tab.id
-                    ? 'bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white border-transparent shadow-sm'
-                    : 'bg-slate-100 border-slate-200 text-slate-700 hover:border-[#FF7A30] hover:text-[#FF7A30]'
-                }`}>
-                {tab.icon}<span>{tab.label}</span>
+            <div className="flex items-center gap-3 flex-wrap justify-end">
+              {/* DB badge */}
+              <div className={`px-3 py-1.5 rounded-full text-xs font-mono font-bold flex items-center gap-2 border ${
+                dbSource === 'supabase' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'
+              }`}>
+                <span className={`w-2 h-2 rounded-full animate-pulse ${dbSource === 'supabase' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                <span>{dbSource === 'supabase' ? 'SUPABASE LIVE' : 'LOCAL STORE'}</span>
+              </div>
+
+              {/* Nav tabs */}
+              {([
+                { id: 'dashboard', icon: <LayoutDashboard className="w-3.5 h-3.5" />, label: 'Dashboard' },
+                { id: 'registrations', icon: <List className="w-3.5 h-3.5" />, label: 'Runners' },
+                { id: 'proofs', icon: <Eye className="w-3.5 h-3.5" />, label: `Proofs (${registrationsWithProof.length})` },
+                { id: 'scanner', icon: <Camera className="w-3.5 h-3.5" />, label: 'Scanner' }
+              ] as const).map(tab => (
+                <button key={tab.id} onClick={() => setCurrentView(tab.id)}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-all border ${
+                    currentView === tab.id
+                      ? 'bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white border-transparent shadow-sm'
+                      : 'bg-slate-100 border-slate-200 text-slate-700 hover:border-[#FF7A30] hover:text-[#FF7A30]'
+                  }`}>
+                  {tab.icon}<span>{tab.label}</span>
+                </button>
+              ))}
+
+              <button onClick={fetchRegistrations} disabled={loading}
+                className="p-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 rounded-md disabled:opacity-50" title="Refresh data">
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               </button>
-            ))}
 
-            <button onClick={fetchRegistrations} disabled={loading}
-              className="p-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 rounded-md disabled:opacity-50" title="Refresh data">
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-
-            <button onClick={handleLogout}
-              className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider">
-              <LogOut className="w-3.5 h-3.5" /><span>Log Out</span>
-            </button>
+              <button onClick={handleLogout}
+                className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider">
+                <LogOut className="w-3.5 h-3.5" /><span>Log Out</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -408,7 +468,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8">
         {errorMsg && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3 text-red-800 text-sm">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -423,21 +483,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
         {currentView === 'dashboard' && (
           <>
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               {[
                 { label: 'Total Registered', value: stats?.totalRegistrations ?? registrations.length, color: 'text-[#0A0A0A]', icon: <Users className="w-5 h-5 text-[#FF7A30]" /> },
                 { label: 'Revenue Collected', value: `₹${(stats?.totalRevenueINR ?? 0).toLocaleString('en-IN')}`, color: 'text-[#FF7A30]', icon: <IndianRupee className="w-5 h-5 text-emerald-600" /> },
                 { label: 'Paid Runners', value: stats?.totalPaidCount ?? 0, color: 'text-emerald-600', icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" /> },
                 { label: 'Pending', value: stats?.totalPendingCount ?? 0, color: 'text-amber-600', icon: <Clock className="w-5 h-5 text-amber-500" /> },
-                { label: 'Checked In', value: stats?.checkedInCount ?? 0, color: 'text-blue-600', icon: <UserCheck className="w-5 h-5 text-blue-500" /> }
-              ].map(({ label, value, color, icon }) => (
-                <div key={label} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all">
+                { label: 'Checked In', value: stats?.checkedInCount ?? 0, color: 'text-blue-600', icon: <UserCheck className="w-5 h-5 text-blue-500" />, spanMobile: true }
+              ].map(({ label, value, color, icon, spanMobile }) => (
+                <div key={label} className={`bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-sm hover:shadow-md transition-all ${spanMobile ? 'col-span-2 sm:col-span-1' : ''}`}>
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-xs font-mono uppercase tracking-wider text-slate-500">{label}</p>
-                      <h3 className={`font-thunder text-4xl font-black mt-1 ${color}`}>{value}</h3>
+                      <p className="text-[11px] sm:text-xs font-mono uppercase tracking-wider text-slate-500">{label}</p>
+                      <h3 className={`font-thunder text-3xl sm:text-4xl font-black mt-1 ${color}`}>{value}</h3>
                     </div>
-                    <div className="p-2.5 bg-slate-100 rounded-lg">{icon}</div>
+                    <div className="p-2 sm:p-2.5 bg-slate-100 rounded-lg">{icon}</div>
                   </div>
                 </div>
               ))}
@@ -601,7 +661,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                   <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input type="text" placeholder="Search name, email, phone, ticket ID, transaction ID..."
                     value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-md pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-[#FF7A30]" />
+                    className="w-full bg-slate-50 border border-slate-300 rounded-md pl-10 pr-4 py-2.5 text-xs text-black placeholder:text-slate-400 focus:outline-none focus:border-[#FF7A30]" />
                 </div>
                 <div className="flex flex-wrap gap-3 items-center w-full md:w-auto">
                   {[
@@ -832,7 +892,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                   placeholder="Transaction / UTR ID (e.g. 432901928311)"
                   value={modalUploadTxId}
                   onChange={e => setModalUploadTxId(e.target.value)}
-                  className="bg-white border border-amber-300 rounded px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#FF7A30]"
+                  className="bg-white border border-amber-300 rounded px-3 py-1.5 text-xs text-black placeholder:text-slate-400 focus:outline-none focus:border-[#FF7A30]"
                 />
                 <label className="cursor-pointer">
                   <input

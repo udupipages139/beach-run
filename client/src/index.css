@@ -93,3 +93,35 @@ html, body {
     opacity: 1 !important;
   }
 }
+
+/* ─── QR Scanner Mobile & Desktop Viewport Fixes ─── */
+#qr-scanner-container {
+  width: 100% !important;
+  min-height: 280px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 1rem !important;
+  background-color: #060B14 !important;
+}
+
+#qr-scanner-container video {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 280px !important;
+  max-height: 480px !important;
+  object-fit: cover !important;
+  border-radius: 1rem !important;
+  display: block !important;
+}
+
+#qr-scanner-container canvas {
+  max-width: 100% !important;
+}
+
+#qr-shaded-region {
+  border-color: rgba(255, 122, 48, 0.45) !important;
+}
+
+#qr-scanner-container__scan_region {
+  min-height: 260px !important;
+}

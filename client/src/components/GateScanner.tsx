@@ -96,6 +96,10 @@ export const GateScanner: React.FC<GateScannerProps> = ({ authToken, onBack }) =
   const [html5QrCodeLib, setHtml5QrCodeLib] = useState<any>(null);
   const [scannerInstance, setScannerInstance] = useState<any>(null);
 
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+  const [startingCamera, setStartingCamera] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+
   const scannerDivId = 'qr-scanner-container';
   const debounceRef = useRef(false);
 
@@ -134,35 +138,109 @@ export const GateScanner: React.FC<GateScannerProps> = ({ authToken, onBack }) =
 
   // ─── Start/Stop Scanner ─────────────────────────────────────────────────────
 
-  const startScanner = async () => {
-    if (!html5QrCodeLib) return;
-    try {
-      const { Html5Qrcode } = html5QrCodeLib;
-      const cameras = await Html5Qrcode.getCameras();
-      if (!cameras || cameras.length === 0) {
+  const startScanner = async (preferredFacing: 'environment' | 'user' = facingMode) => {
+    setStartingCamera(true);
+    setCameraError(null);
+
+    let mod = html5QrCodeLib;
+    if (!mod) {
+      try {
+        mod = await import('html5-qrcode');
+        setHtml5QrCodeLib(mod);
+      } catch (err: any) {
         setCameraAvailable(false);
-        setManualOpen(true);
+        setCameraError('Scanner module failed to load. Please use manual input.');
+        setStartingCamera(false);
         return;
       }
-      setCameraAvailable(true);
+    }
 
-      // Prefer rear camera
-      const cam = cameras.find((c: any) => /back|rear|environment/i.test(c.label)) || cameras[cameras.length - 1];
+    // Stop existing scanner if already running
+    if (scannerInstance) {
+      try {
+        await scannerInstance.stop();
+      } catch (_) {}
+    }
 
-      const scanner = new Html5Qrcode(scannerDivId);
+    try {
+      // Switch active state first so DOM container has visible geometry
+      setScannerActive(true);
+
+      // Brief tick for React state to paint the visible container
+      await new Promise(r => setTimeout(r, 60));
+
+      const { Html5Qrcode } = mod;
+      const scanner = new Html5Qrcode(scannerDivId, { verbose: false });
       setScannerInstance(scanner);
 
-      await scanner.start(
-        cam.id,
-        { fps: 10, qrbox: { width: 260, height: 260 }, aspectRatio: 1 },
-        (decodedText: string) => handleQrScan(decodedText),
-        () => {} // errors are expected between scans
-      );
-      setScannerActive(true);
+      const qrConfig = {
+        fps: 15,
+        qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          const edge = Math.max(Math.floor(minEdge * 0.72), 180);
+          return { width: edge, height: edge };
+        }
+      };
+
+      let started = false;
+
+      // Strategy 1: facingMode (standard W3C constraint for mobile rear camera)
+      try {
+        await scanner.start(
+          { facingMode: preferredFacing },
+          qrConfig,
+          (decodedText: string) => handleQrScan(decodedText),
+          () => {} // per-frame scan misses are expected
+        );
+        started = true;
+      } catch (errFacing: any) {
+        console.warn(`[GateScanner] facingMode "${preferredFacing}" start attempt:`, errFacing?.message || errFacing);
+      }
+
+      // Strategy 2: If facingMode failed, query camera devices
+      if (!started) {
+        const cameras = await Html5Qrcode.getCameras().catch(() => []);
+        if (cameras && cameras.length > 0) {
+          let cam = cameras[0];
+          if (preferredFacing === 'environment') {
+            cam = cameras.find((c: any) => /back|rear|environment|main|0/i.test(c.label)) || cameras[0];
+          } else {
+            cam = cameras.find((c: any) => /front|user|selfie/i.test(c.label)) || cameras[cameras.length - 1];
+          }
+          await scanner.start(
+            cam.id,
+            qrConfig,
+            (decodedText: string) => handleQrScan(decodedText),
+            () => {}
+          );
+          started = true;
+        }
+      }
+
+      if (started) {
+        setCameraAvailable(true);
+
+        // Ensure iOS Safari playsinline video playback
+        setTimeout(() => {
+          const video = document.querySelector<HTMLVideoElement>(`#${scannerDivId} video`);
+          if (video) {
+            video.setAttribute('playsinline', 'true');
+            video.setAttribute('webkit-playsinline', 'true');
+            video.muted = true;
+            video.play().catch(() => {});
+          }
+        }, 150);
+      } else {
+        throw new Error('Could not access mobile camera. Please verify camera permissions in browser settings.');
+      }
     } catch (err: any) {
-      console.warn('[GateScanner] Camera start failed:', err.message);
+      console.warn('[GateScanner] Camera start failed:', err?.message || err);
       setCameraAvailable(false);
+      setScannerActive(false);
+      setCameraError(err?.message || 'Camera permission denied or camera unavailable');
       setManualOpen(true);
+    } finally {
+      setStartingCamera(false);
     }
   };
 
@@ -174,6 +252,41 @@ export const GateScanner: React.FC<GateScannerProps> = ({ authToken, onBack }) =
       setScannerInstance(null);
     }
     setScannerActive(false);
+  };
+
+  const toggleCameraFacing = async () => {
+    const nextFacing = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(nextFacing);
+    if (scannerActive) {
+      await stopScanner();
+      startScanner(nextFacing);
+    }
+  };
+
+  // Native photo upload / file scan fallback
+  const handleScanFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLoading(true);
+    try {
+      let mod = html5QrCodeLib;
+      if (!mod) {
+        mod = await import('html5-qrcode');
+        setHtml5QrCodeLib(mod);
+      }
+      const { Html5Qrcode } = mod;
+      const scanner = scannerInstance || new Html5Qrcode(scannerDivId, { verbose: false });
+      const result = await scanner.scanFile(file, true);
+      if (result) {
+        handleQrScan(result);
+      }
+    } catch (err: any) {
+      console.warn('[GateScanner] Image scan error:', err);
+      alert('Could not detect a valid QR code in this image. Please take a clearer photo or enter the token manually.');
+    } finally {
+      setLoading(false);
+      if (e.target) e.target.value = '';
+    }
   };
 
   useEffect(() => {
@@ -328,34 +441,34 @@ export const GateScanner: React.FC<GateScannerProps> = ({ authToken, onBack }) =
     <div className="min-h-screen bg-[#060B14] text-[#F5F3EE] font-sans">
 
       {/* ─── Header ─────────────────────────────────────────────────────────── */}
-      <header className="flex items-center justify-between px-4 py-4 border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+      <header className="flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4 border-b border-white/5">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <button onClick={onBack} className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg transition-colors flex-shrink-0" title="Back">
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF7A30] to-[#FFB347] flex items-center justify-center">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#FF7A30] to-[#FFB347] flex items-center justify-center flex-shrink-0">
             <UserCheck className="w-5 h-5 text-white" />
           </div>
-          <div>
-            <h1 className="font-thunder text-2xl font-black tracking-wider uppercase leading-none">GATE CHECK-IN</h1>
-            <p className="text-[11px] text-slate-400 tracking-wider">Udupipages Beach Run 2026</p>
+          <div className="min-w-0">
+            <h1 className="font-thunder text-xl sm:text-2xl font-black tracking-wider uppercase leading-none truncate">GATE CHECK-IN</h1>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 tracking-wider truncate">Udupipages Beach Run 2026</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="bg-[#0F1929] border border-white/10 rounded-xl px-4 py-2.5 text-center min-w-[90px]">
-            <p className="text-[10px] text-slate-400 uppercase tracking-widest">Checked In</p>
-            <div className="flex items-center justify-center gap-2 mt-0.5">
-              <span className="font-thunder text-3xl text-white font-black">{checkedInCount}</span>
-              <button onClick={fetchCount} className="text-slate-500 hover:text-[#FF7A30] transition-colors" title="Refresh count">
-                <RefreshCw className="w-3.5 h-3.5" />
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="bg-[#0F1929] border border-white/10 rounded-xl px-2.5 sm:px-4 py-1.5 sm:py-2 text-center min-w-[70px] sm:min-w-[90px]">
+            <p className="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-widest leading-none">Checked In</p>
+            <div className="flex items-center justify-center gap-1.5 mt-0.5">
+              <span className="font-thunder text-2xl sm:text-3xl text-white font-black leading-none">{checkedInCount}</span>
+              <button onClick={fetchCount} className="text-slate-500 hover:text-[#FF7A30] transition-colors p-0.5" title="Refresh count">
+                <RefreshCw className="w-3 h-3" />
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-5">
+      <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
 
         {/* ─── Camera Section ───────────────────────────────────────────────── */}
         <div className="text-center space-y-1">
@@ -366,51 +479,92 @@ export const GateScanner: React.FC<GateScannerProps> = ({ authToken, onBack }) =
         </div>
 
         {/* Scanner box */}
-        <div className="relative bg-[#0F1929] border border-white/10 rounded-2xl overflow-hidden min-h-[300px]">
-          {/* html5-qrcode target div */}
-          <div id={scannerDivId} className={`w-full ${scannerActive ? 'block' : 'hidden'}`} />
+        <div className="relative bg-[#0F1929] border border-white/10 rounded-2xl overflow-hidden min-h-[300px] flex items-center justify-center">
+          {/* Target container for html5-qrcode */}
+          <div
+            id={scannerDivId}
+            className={`w-full min-h-[300px] ${scannerActive ? 'block' : 'hidden'}`}
+          />
 
-          {/* Camera unavailable state */}
-          {cameraAvailable === false && !scannerActive && (
-            <div className="flex flex-col items-center justify-center py-16 px-6 text-center space-y-3">
-              <CameraOff className="w-14 h-14 text-red-400" />
-              <p className="font-bold text-white text-lg">Camera Unavailable</p>
-              <p className="text-slate-400 text-sm">Unable to access camera. Please check permissions.</p>
-              <p className="text-slate-500 text-xs">Use the manual input field below to enter ticket tokens.</p>
-              <p className="text-slate-600 text-[11px] mt-2">📱 For phone scanning: access via HTTPS or ngrok tunnel</p>
+          {/* Idle / Ready / Error state when scanner is inactive */}
+          {!scannerActive && (
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center space-y-4 w-full">
+              {cameraError ? (
+                <>
+                  <CameraOff className="w-12 h-12 text-red-400" />
+                  <p className="font-bold text-white text-base">Camera Notice</p>
+                  <p className="text-slate-400 text-xs max-w-xs">{cameraError}</p>
+                  <button
+                    onClick={() => startScanner()}
+                    disabled={startingCamera}
+                    className="flex items-center gap-2 bg-[#FF7A30] text-white text-xs font-bold uppercase px-5 py-2.5 rounded-lg hover:bg-[#FFB347] transition-colors shadow-md"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${startingCamera ? 'animate-spin' : ''}`} />
+                    <span>{startingCamera ? 'Starting Camera...' : 'Retry Camera'}</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                    <Camera className="w-8 h-8 text-[#FF7A30]" />
+                  </div>
+                  <div>
+                    <p className="text-white font-bold text-base">Ready to Scan</p>
+                    <p className="text-slate-400 text-xs mt-1">Tap below to activate camera scanner</p>
+                  </div>
+                  <button
+                    onClick={() => startScanner()}
+                    disabled={startingCamera}
+                    className="flex items-center gap-2 bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white text-xs font-black uppercase px-6 py-3 rounded-xl shadow-lg hover:opacity-95 transition-all"
+                  >
+                    <Camera className={`w-4 h-4 ${startingCamera ? 'animate-pulse' : ''}`} />
+                    <span>{startingCamera ? 'Opening Camera...' : 'Start Camera Scanner'}</span>
+                  </button>
+                </>
+              )}
+
+              {/* Snap Photo / Upload QR Fallback */}
+              <div className="pt-2">
+                <label className="cursor-pointer inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-slate-300 text-xs font-semibold px-4 py-2 rounded-lg transition-colors border border-white/10">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleScanFile}
+                  />
+                  <QrCode className="w-3.5 h-3.5 text-[#FF7A30]" />
+                  <span>Snap Photo / Upload QR Image</span>
+                </label>
+              </div>
             </div>
           )}
 
-          {/* Idle/ready state */}
-          {cameraAvailable !== false && !scannerActive && (
-            <div className="flex flex-col items-center justify-center py-16 space-y-4">
-              <Camera className="w-12 h-12 text-slate-500" />
-              <p className="text-slate-400 text-sm">Camera not started</p>
-              <button
-                onClick={startScanner}
-                className="flex items-center gap-2 bg-[#FF7A30] text-white text-xs font-bold uppercase px-5 py-2.5 rounded-lg hover:bg-[#FFB347] transition-colors"
-              >
-                <Camera className="w-4 h-4" /> START SCANNER
-              </button>
-            </div>
-          )}
-
-          {/* Scanner controls overlay */}
+          {/* Scanner controls overlay when active */}
           {scannerActive && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
+            <div className="absolute bottom-3 left-0 right-0 px-4 flex items-center justify-center gap-2 z-10">
               <button
                 onClick={stopScanner}
-                className="bg-red-600 text-white text-xs font-bold uppercase px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                className="bg-red-600/90 hover:bg-red-600 text-white text-xs font-bold uppercase px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-md backdrop-blur-sm"
               >
                 <CameraOff className="w-3.5 h-3.5" /> STOP
+              </button>
+              <button
+                onClick={toggleCameraFacing}
+                className="bg-black/60 hover:bg-black/80 text-white text-xs font-bold uppercase px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 border border-white/20 backdrop-blur-sm"
+                title="Flip Camera"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>{facingMode === 'environment' ? 'Front' : 'Rear'} Cam</span>
               </button>
             </div>
           )}
 
           {/* Loading overlay */}
           {loading && (
-            <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-20">
-              <RefreshCw className="w-10 h-10 text-[#FF7A30] animate-spin" />
+            <div className="absolute inset-0 bg-black/75 flex flex-col items-center justify-center z-20 gap-2">
+              <RefreshCw className="w-9 h-9 text-[#FF7A30] animate-spin" />
+              <p className="text-xs font-mono text-white uppercase tracking-wider">Verifying ticket...</p>
             </div>
           )}
         </div>
