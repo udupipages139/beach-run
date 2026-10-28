@@ -1,7 +1,7 @@
 # 🏆 Udupipages Beach Run 2026 — Master Deployment & Project Documentation
 
 > **Last Updated:** August 8, 2026  
-> **Event Date:** December 6, 2026  
+> **Event Date:** January 10, 2027  
 > **Location:** Udupi, Karnataka, India (Padukere Ground ➔ Kaup Beach)
 
 ---

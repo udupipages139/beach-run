@@ -62,7 +62,7 @@ export const blogArticles: BlogPost[] = [
     featured: true,
     eventDetails: {
       website: 'www.udupibeachrun.com',
-      date: 'Sunday, December 6, 2026',
+      date: 'Sunday, 10 January 2027',
       location: 'Malpe & Padukere Beach, Udupi',
       flagOff: '5:30 AM - 7:30 AM',
       support: 'run@udupibeachrun.com | +91 9180323209 / +91 8494983557'
@@ -71,7 +71,7 @@ export const blogArticles: BlogPost[] = [
       'There is a unique, soul-reviving thrill in lacing up your running shoes and stepping onto the soft, golden sands of the Indian coastline. As the early morning sky over Udupi slowly transforms from deep indigo into brilliant shades of liquid gold and warm crimson, the crisp ocean breeze revives your senses. The rhythmic, soothing sound of waves crashing along the shores of Malpe and Padukere sets an inspiring rhythm for an unforgettable athletic experience.',
       'However, ask any experienced marathoner or professional athletic coach, and they will tell you a crucial truth: running on sand is an entirely different ballgame compared to running on hard city asphalt or rubberized running tracks.',
       'Sand absorbs your kinetic energy, shifts unpredictably beneath every foot strike, and demands up to 1.6 times more biomechanical energy from your body. Your calves, ankles, intrinsic foot muscles, stabilizing joints, and core must work significantly harder to keep you balanced and moving forward. Without proper preparation, a sudden transition to beach running can lead to early fatigue, calf cramps, or ankle strain.',
-      'Whether you are preparing to join the family-friendly 3K Fun Run, challenging your pace in the 5K Run, or taking on the ultimate test of grit in the 15K Endurance Run at the Udupipages Beach Run 2026, this comprehensive, expert-backed training guide will prepare your mind and body to dominate the shore on December 6, 2026!'
+      'Whether you are preparing to join the family-friendly 3K Fun Run, challenging your pace in the 5K Run, or taking on the ultimate test of grit in the 15K Endurance Run at the Udupipages Beach Run 2026, this comprehensive, expert-backed training guide will prepare your mind and body to dominate the shore on 10 January 2027!'
     ],
     sections: [
       {
@@ -129,7 +129,7 @@ export const blogArticles: BlogPost[] = [
       },
       {
         title: 'Section 5: Race-Day Tactics: Mastering the Malpe & Padukere Trail',
-        subtitle: 'Executing a smart race plan on December 6, 2026, will make your run efficient and enjoyable.',
+        subtitle: 'Executing a smart race plan on 10 January 2027, will make your run efficient and enjoyable.',
         content: [
           '1. Target the Firm Wet Sand: Run near the water line where the receding tide leaves behind damp, packed sand. This surface offers optimal traction and high ground energy return, helping you maintain a consistent pace.',
           '2. Manage Beach Slope Angle: Beaches naturally slope toward the water. Running long distances on an angled surface puts uneven strain on your hips, knees, and ankles. Solution: Switch sides periodically along the course or run slightly closer to the flat water’s edge when safe.',
@@ -158,7 +158,7 @@ export const blogArticles: BlogPost[] = [
       },
       {
         question: 'When and where will the event take place?',
-        answer: 'The event will take place on Sunday, December 6, 2026, along Malpe and Padukere Beach, Udupi. The flag-off window is from 5:30 AM to 7:30 AM.'
+        answer: 'The event will take place on Sunday, 10 January 2027, along Malpe and Padukere Beach, Udupi. The flag-off window is from 5:30 AM to 7:30 AM.'
       },
       {
         question: 'How do I pick up my Bib and Race Kit?',
@@ -172,7 +172,7 @@ export const blogArticles: BlogPost[] = [
     conclusion: {
       heading: 'Start Your Beach Training Journey Today!',
       paragraphs: [
-        'Running on sand tests your endurance, strengthens your body, and connects you with nature. By following this progressive training guide, building ankle stability, pacing yourself wisely, and respecting the coastal environment, you will be fully prepared to conquer the sand on December 6, 2026.',
+        'Running on sand tests your endurance, strengthens your body, and connects you with nature. By following this progressive training guide, building ankle stability, pacing yourself wisely, and respecting the coastal environment, you will be fully prepared to conquer the sand on 10 January 2027.',
         'Join over 1,500 runners in making a lasting impact on your health and Udupi’s coastline!'
       ],
       ctaText: 'Register Now for Udupipages Beach Run 2026'
@@ -194,7 +194,7 @@ export const blogArticles: BlogPost[] = [
     featured: false,
     eventDetails: {
       website: 'www.udupibeachrun.com',
-      date: 'Sunday, December 6, 2026',
+      date: 'Sunday, 10 January 2027',
       location: 'Malpe & Padukere, Udupi',
       flagOff: '5:30 AM - 7:30 AM',
       support: 'run@udupibeachrun.com | +91 9180323209'
@@ -235,7 +235,7 @@ export const blogArticles: BlogPost[] = [
         title: '3. More Than a Medal: Our Core Environmental Mission',
         subtitle: 'Taking a stand for Udupi\'s fragile marine ecosystem',
         content: [
-          'When you cross the finish line at Malpe or Padukere on December 6, 2026, you won\'t just receive a medal or a certificate of completion. You will carry the pride of knowing you stood up for Udupi’s fragile coastal ecosystem.',
+          'When you cross the finish line at Malpe or Padukere on 10 January 2027, you won\'t just receive a medal or a certificate of completion. You will carry the pride of knowing you stood up for Udupi’s fragile coastal ecosystem.',
           'Our oceans and beaches are facing unprecedented threats from plastic pollution, discarded packaging, and waste accumulation from urban runoff. If left unchecked, these materials break down into microplastics that damage marine life, poison fish, and destroy the natural beauty of our beaches.'
         ],
         bulletPoints: [
@@ -257,7 +257,7 @@ export const blogArticles: BlogPost[] = [
         ]
       },
       {
-        title: '5. Practical Eco Tips for Race Day (December 6, 2026)',
+        title: '5. Practical Eco Tips for Race Day (10 January 2027)',
         subtitle: 'How you can play an active role in keeping the event green and sustainable',
         content: [
           'If you are joining us on race day, you can play an active role in keeping our event green and sustainable. Here are simple ways you can help:'
@@ -273,7 +273,7 @@ export const blogArticles: BlogPost[] = [
     faqs: [
       {
         question: 'When and where is the Udupipages Beach Run 2026 taking place?',
-        answer: 'The event is scheduled for Sunday, December 6, 2026. The assembly and flag-off take place along the scenic coastal stretch of Malpe and Padukere, Udupi. The flag-off window is between 5:30 AM and 7:30 AM.'
+        answer: 'The event is scheduled for Sunday, 10 January 2027. The assembly and flag-off take place along the scenic coastal stretch of Malpe and Padukere, Udupi. The flag-off window is between 5:30 AM and 7:30 AM.'
       },
       {
         question: 'How can I register for the event?',
@@ -292,7 +292,7 @@ export const blogArticles: BlogPost[] = [
       heading: 'Take the First Step Today!',
       paragraphs: [
         'Udupi’s coastline has given us breathtaking sunscapes, soothing sea breezes, and an unmatched natural heritage. Now, it’s our turn to give back.',
-        'When you lace up your running shoes on December 6, 2026, every footprint you leave on the sand is a declaration of love for your health, your community, and your environment. You are not just running a race; you are helping preserve the soul of Udupi\'s pristine shores for generations to come.'
+        'When you lace up your running shoes on 10 January 2027, every footprint you leave on the sand is a declaration of love for your health, your community, and your environment. You are not just running a race; you are helping preserve the soul of Udupi\'s pristine shores for generations to come.'
       ],
       ctaText: 'Register Now & Make a Difference'
     }
@@ -302,7 +302,7 @@ export const blogArticles: BlogPost[] = [
     slug: '5-reasons-to-register-udupipages-beach-run',
     title: 'Why Udupi’s Coastline is Calling You: 5 Reasons to Register for the Udupipages Beach Run 2026',
     h1Title: 'Why Udupi’s Coastline is Calling You: 5 Reasons to Register for the Udupipages Beach Run 2026',
-    metaDescription: 'Discover why the Udupipages Beach Run 2026 on December 6 is Udupi\'s most exciting coastal event. Explore 5 compelling reasons to register for the 3K, 5K, or 15K run at Malpe and Padukere!',
+    metaDescription: 'Discover why the Udupipages Beach Run 2026 on 10 January 2027 is Udupi\'s most exciting coastal event. Explore 5 compelling reasons to register for the 3K, 5K, or 15K run at Malpe and Padukere!',
     category: 'COMMUNITY & EVENT',
     date: 'OCT 24, 2026',
     readTime: '8 MIN READ',
@@ -313,7 +313,7 @@ export const blogArticles: BlogPost[] = [
     featured: false,
     eventDetails: {
       website: 'www.udupibeachrun.com',
-      date: 'Sunday, December 6, 2026',
+      date: 'Sunday, 10 January 2027',
       location: 'Malpe, Padukere, Udupi',
       flagOff: '5:30 AM – 7:30 AM',
       support: 'run@udupibeachrun.com | +91 9180323209 / +91 8494983557'
@@ -380,7 +380,7 @@ export const blogArticles: BlogPost[] = [
         ]
       },
       {
-        title: 'Action Plan & Registration Guide for December 6, 2026',
+        title: 'Action Plan & Registration Guide for 10 January 2027',
         subtitle: 'Essential Event Snapshot & Step-by-Step Instructions',
         content: [
           '1. Visit the Official Portal: Head over to www.udupibeachrun.com.',
@@ -412,7 +412,7 @@ export const blogArticles: BlogPost[] = [
       heading: 'Answer the Call of Udupi’s Coastline Today!',
       paragraphs: [
         'Udupi’s breathtaking coastline has gifted us stunning sunrises, soothing sea breezes, and an irreplaceable natural heritage. Now, it is our turn to step up, take care of our bodies, and give back to the environment that sustains us.',
-        'When you lace up your running shoes on December 6, 2026, every footprint you leave on the golden sand of Malpe and Padukere is a declaration of commitment to your personal health, your local community, and the preservation of our oceans. You are not just running a race—you are helping protect the soul of Udupi\'s pristine shores for generations to come.',
+        'When you lace up your running shoes on 10 January 2027, every footprint you leave on the golden sand of Malpe and Padukere is a declaration of commitment to your personal health, your local community, and the preservation of our oceans. You are not just running a race—you are helping protect the soul of Udupi\'s pristine shores for generations to come.',
         'The coastline is calling. Will you answer?'
       ],
       ctaText: 'Register Now & Secure Your Spot'
@@ -433,7 +433,7 @@ export const blogArticles: BlogPost[] = [
     authorRole: 'Technical Race Architecture Desk',
     eventDetails: {
       website: 'www.udupibeachrun.com',
-      date: 'Sunday, December 6, 2026',
+      date: 'Sunday, 10 January 2027',
       location: 'Padukere Ground to Kapu Light House',
       flagOff: '5:30 AM - 7:30 AM',
       support: 'run@udupibeachrun.com | +91 9180323209'
@@ -479,7 +479,7 @@ export const blogArticles: BlogPost[] = [
     authorRole: 'Public Ecological Policy Secretariat',
     eventDetails: {
       website: 'www.udupibeachrun.com',
-      date: 'Sunday, December 6, 2026',
+      date: 'Sunday, 10 January 2027',
       location: 'Malpe & Padukere, Udupi',
       flagOff: '5:30 AM - 7:30 AM',
       support: 'run@udupibeachrun.com | +91 9180323209'

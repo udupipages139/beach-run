@@ -14,8 +14,8 @@ export const FAQ: React.FC = () => {
 
   const faqs: FAQItem[] = [
     {
-      q: 'When is UdupiPages Beach Run 2026?',
-      a: 'The event is planned for 6th December 2026.'
+      q: 'When is UdupiPages Beach Run?',
+      a: 'The event is scheduled for 10th January 2027.'
     },
     {
       q: 'Where is the Beach Run conducted?',

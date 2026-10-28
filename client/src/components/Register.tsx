@@ -292,7 +292,7 @@ export const Register: React.FC = () => {
             Register UdupiPages Beach Run
           </h2>
           <p className="text-xs sm:text-base text-slate-700 font-normal max-w-2xl mx-auto">
-            Select your distance category below to secure your bib for 6th December 2026.
+            Select your distance category below to secure your bib for 10th January 2027.
           </p>
         </div>
 
@@ -572,7 +572,7 @@ export const Register: React.FC = () => {
                     { label: 'T-Shirt Size', value: ticketData.tshirtSize },
                     { label: 'Entry Fee', value: `₹${ticketData.amountINR} INR` },
                     { label: 'Transaction ID', value: ticketData.transactionId || 'Processing...' },
-                    { label: 'Date & Venue', value: '6 Dec 2026 · Padukere Ground, Udupi' }
+                    { label: 'Date & Venue', value: '10 Jan 2027 · Padukere Ground, Udupi' }
                   ].map(({ label, value }) => (
                     <div key={label} className="flex justify-between px-4 py-2.5 text-xs">
                       <span className="text-slate-500">{label}</span>

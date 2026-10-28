@@ -20,10 +20,6 @@ export const Partners: React.FC = () => {
   ];
 
   const communityPartners = [
-    { name: 'Udupi District Tourism', icon: Waves },
-    { name: 'Karnataka Marine Board', icon: Anchor },
-    { name: 'Coastal Protection Forum', icon: Shield },
-    { name: 'Clean Seas Initiative', icon: Globe },
     {
       name: 'Udupipages Media',
       logo: '/images/partners/udupipages.jpg',
@@ -34,6 +30,10 @@ export const Partners: React.FC = () => {
       logo: '/images/partners/technetmark.jpg',
       url: 'https://www.technetmark.com/',
     },
+    { name: 'Udupi District Tourism', icon: Waves },
+    { name: 'Karnataka Marine Board', icon: Anchor },
+    { name: 'Coastal Protection Forum', icon: Shield },
+    { name: 'Clean Seas Initiative', icon: Globe },
   ];
 
   return (

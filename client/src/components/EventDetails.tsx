@@ -94,7 +94,7 @@ export const EventDetails: React.FC = () => {
           <div className="bg-slate-50 border border-slate-200 p-6 space-y-3 shadow-sm">
             <Calendar className="w-6 h-6 text-[#00A3FF]" />
             <h3 className="font-thunder text-2xl text-[#0A0A0A]">DATE & TIME</h3>
-            <p className="text-lg font-bold text-[#00A3FF]">Sunday, 6th December 2026</p>
+            <p className="text-lg font-bold text-[#00A3FF]">Sunday, 10th January 2027</p>
             <p className="text-xs text-slate-600">Assembly starts at 5:00 AM</p>
           </div>
 

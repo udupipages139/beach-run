@@ -9,7 +9,7 @@ export const Hero: React.FC = () => {
   });
 
   useEffect(() => {
-    const target = new Date('December 6, 2026 06:00:00+05:30').getTime();
+    const target = new Date('January 10, 2027 06:00:00+05:30').getTime();
 
     const tick = () => {
       const now = new Date().getTime();
@@ -86,7 +86,7 @@ export const Hero: React.FC = () => {
         {/* Hero Copy Content */}
         <div className="copy max-w-[720px]">
           <div className="ey text-[13px] font-black tracking-[0.14em] text-[#f5661b] uppercase mb-2">
-            Udupipages Beach Run 2026 • December 2026
+            Udupipages Beach Run • 10 January 2027
           </div>
 
           <h1
@@ -103,7 +103,7 @@ export const Hero: React.FC = () => {
           </p>
 
           <div className="line flex gap-[25px] flex-wrap font-extrabold text-[#10294f] text-[15px] my-[25px]">
-            <span>📅 6th December 2026</span>
+            <span>📅 10th January 2027</span>
             <span>📍 Malpe Padukere Beach, to Kaup Beach Udupi</span>
           </div>
 

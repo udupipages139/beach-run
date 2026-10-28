@@ -14,7 +14,7 @@ export const Footer: React.FC = () => {
               <img
                 src="/images/logo.png"
                 alt="Udupipages Beach Run Official Logo"
-                className="h-12 xs:h-16 sm:h-20 w-auto object-contain drop-shadow-sm flex-shrink-0"
+                className="h-12 xs:h-16 sm:h-18 w-auto object-contain bg-white p-1 rounded-lg shadow-sm flex-shrink-0"
               />
               <div>
                 <span className="font-thunder text-2xl xs:text-3xl sm:text-4xl text-white tracking-wider block leading-none">

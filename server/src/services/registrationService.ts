@@ -84,7 +84,7 @@ function createSampleUpiProof(name: string, amount: number, utr: string, categor
   <path d="M199 130L206 137L221 122" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
   
   <text x="210" y="188" fill="#F8FAFC" font-family="sans-serif" font-size="18" font-weight="bold" text-anchor="middle">Payment Successful</text>
-  <text x="210" y="210" fill="#94A3B8" font-family="sans-serif" font-size="12" text-anchor="middle">6 Dec 2026 • Padukere Beach Run</text>
+  <text x="210" y="210" fill="#94A3B8" font-family="sans-serif" font-size="12" text-anchor="middle">10 Jan 2027 • Padukere Beach Run</text>
 
   <!-- Amount -->
   <text x="210" y="265" fill="#FF7A30" font-family="sans-serif" font-size="38" font-weight="900" text-anchor="middle">₹${amount}.00</text>
@@ -452,7 +452,7 @@ async function sendTicketEmail(reg: RegistrationRecord, qrBuffer: Buffer): Promi
           </td>
           <td style="padding:12px;background:#161616;border-left:3px solid #555;">
             <p style="margin:0;color:#888;font-size:10px;text-transform:uppercase;letter-spacing:2px;">Date & Venue</p>
-            <p style="margin:4px 0 0;color:#F5F3EE;font-size:14px;font-weight:700;">6 Dec 2026<br>Padukere Ground, Udupi</p>
+            <p style="margin:4px 0 0;color:#F5F3EE;font-size:14px;font-weight:700;">10 Jan 2027<br>Padukere Ground, Udupi</p>
           </td>
         </tr>
       </table>

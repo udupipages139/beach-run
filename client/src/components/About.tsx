@@ -72,7 +72,7 @@ export const About: React.FC = () => {
             <div className="relative p-1 bg-gradient-to-b from-[#FF7A30]/40 via-slate-200 to-white shadow-xl">
               <div className="bg-white p-6 sm:p-8 space-y-5">
                 <div className="text-xs font-mono text-[#FF7A30] tracking-widest uppercase font-bold flex items-center justify-between">
-                  <span>EVENT HIGHLIGHTS // DEC 2026</span>
+                  <span>EVENT HIGHLIGHTS // 10 JAN 2027</span>
                 </div>
                 <h3 className="font-thunder text-[11px] xs:text-xs sm:text-sm md:text-base font-extrabold text-[#0A0A0A] flex items-center space-x-1 sm:space-x-1.5 whitespace-nowrap tracking-tight leading-none py-1">
                   <span>PADUKERE GROUND</span>

@@ -79,8 +79,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView = 'home', onNavigate
         >
           <img
             src="/images/header-logo.png"
-            alt="Udupipages Beach Run 2026"
-            className="h-12 sm:h-14 md:h-16 w-auto object-contain transition-transform group-hover:scale-105"
+            alt="Udupipages Beach Run"
+            className="h-14 sm:h-16 md:h-20 max-h-[74px] w-auto object-contain transition-transform group-hover:scale-105"
           />
         </a>
 

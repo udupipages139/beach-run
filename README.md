@@ -1,6 +1,6 @@
 # Udupipages Beach Run 2026 — Master Full-Stack Application
 
-Production-ready marketing and registration full-stack web application for **Udupipages Beach Run 2026** held on **6th December 2026** in Udupi, India (Padukere Ground ➔ Kaup Beach).
+Production-ready marketing and registration full-stack web application for **Udupipages Beach Run** held on **10th January 2027** in Udupi, India (Padukere Ground ➔ Kaup Beach).
 
 > 📘 **Master Deployment & Future Reference Docs**: See [PROJECT_DOCUMENTATION.md](file:///c:/Users/mrcyb/OneDrive/Desktop/project/runner/PROJECT_DOCUMENTATION.md) for live production URLs, Vercel & Render configurations, environment variables, database schema, and deployment architecture details.
 
