@@ -1083,6 +1083,132 @@ export class RegistrationService {
     return null;
   }
 
+  /** Update a registration (admin action) */
+  static async updateRegistration(
+    id: string,
+    updates: Partial<{
+      fullName: string;
+      email: string;
+      phone: string;
+      age: number;
+      categoryId: string;
+      categoryName: string;
+      tshirtSize: string;
+      emergencyContactName: string;
+      emergencyContactPhone: string;
+      experience?: string;
+      bibNumber?: number | null;
+      paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+      amountINR: number;
+      checkedIn: boolean;
+      adminNote?: string;
+    }>
+  ): Promise<RegistrationRecord | null> {
+    const now = new Date().toISOString();
+    const dbUpdates: any = { updated_at: now };
+
+    if (updates.fullName !== undefined) dbUpdates.full_name = updates.fullName.trim();
+    if (updates.email !== undefined) dbUpdates.email = updates.email.trim().toLowerCase();
+    if (updates.phone !== undefined) dbUpdates.phone = updates.phone.trim();
+    if (updates.age !== undefined) dbUpdates.age = Number(updates.age);
+    if (updates.categoryId !== undefined) dbUpdates.category_id = updates.categoryId;
+    if (updates.categoryName !== undefined) dbUpdates.category_name = updates.categoryName;
+    if (updates.tshirtSize !== undefined) dbUpdates.tshirt_size = updates.tshirtSize;
+    if (updates.emergencyContactName !== undefined) dbUpdates.emergency_contact_name = updates.emergencyContactName;
+    if (updates.emergencyContactPhone !== undefined) dbUpdates.emergency_contact_phone = updates.emergencyContactPhone;
+    if (updates.experience !== undefined) dbUpdates.experience = updates.experience;
+    if (updates.bibNumber !== undefined) dbUpdates.bib_number = updates.bibNumber ? Number(updates.bibNumber) : null;
+    if (updates.paymentStatus !== undefined) dbUpdates.payment_status = updates.paymentStatus;
+    if (updates.amountINR !== undefined) dbUpdates.amount_inr = Number(updates.amountINR);
+    if (updates.adminNote !== undefined) dbUpdates.admin_note = updates.adminNote;
+    if (updates.checkedIn !== undefined) {
+      dbUpdates.checked_in = Boolean(updates.checkedIn);
+      if (updates.checkedIn) {
+        dbUpdates.checked_in_at = now;
+      } else {
+        dbUpdates.checked_in_at = null;
+        dbUpdates.checked_in_by = null;
+      }
+    }
+
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('registrations')
+          .update(dbUpdates)
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (!error && data) {
+          const mapped = mapRow(data);
+          inMemoryRegistrations.set(id, mapped);
+          return mapped;
+        } else if (error) {
+          console.error('[RegistrationService] updateRegistration error:', error.message);
+        }
+      } catch (err: any) {
+        console.error('[RegistrationService] updateRegistration exception:', err.message);
+      }
+    }
+
+    const reg = inMemoryRegistrations.get(id);
+    if (reg) {
+      if (updates.fullName !== undefined) reg.fullName = updates.fullName;
+      if (updates.email !== undefined) reg.email = updates.email;
+      if (updates.phone !== undefined) reg.phone = updates.phone;
+      if (updates.age !== undefined) reg.age = Number(updates.age);
+      if (updates.categoryId !== undefined) reg.categoryId = updates.categoryId;
+      if (updates.categoryName !== undefined) reg.categoryName = updates.categoryName;
+      if (updates.tshirtSize !== undefined) reg.tshirtSize = updates.tshirtSize;
+      if (updates.emergencyContactName !== undefined) reg.emergencyContactName = updates.emergencyContactName;
+      if (updates.emergencyContactPhone !== undefined) reg.emergencyContactPhone = updates.emergencyContactPhone;
+      if (updates.experience !== undefined) reg.experience = updates.experience;
+      if (updates.bibNumber !== undefined) reg.bibNumber = updates.bibNumber ? Number(updates.bibNumber) : undefined;
+      if (updates.paymentStatus !== undefined) reg.paymentStatus = updates.paymentStatus;
+      if (updates.amountINR !== undefined) reg.amountINR = Number(updates.amountINR);
+      if (updates.adminNote !== undefined) reg.adminNote = updates.adminNote;
+      if (updates.checkedIn !== undefined) {
+        reg.checkedIn = Boolean(updates.checkedIn);
+        reg.checkedInAt = updates.checkedIn ? now : undefined;
+      }
+      reg.updatedAt = now;
+      inMemoryRegistrations.set(id, reg);
+      return reg;
+    }
+    return null;
+  }
+
+  /** Delete a registration (admin action) */
+  static async deleteRegistration(id: string): Promise<boolean> {
+    if (supabase) {
+      try {
+        // Also remove any check-in logs referencing this registration
+        await supabase.from('checkin_logs').delete().eq('registration_id', id);
+
+        const { error } = await supabase
+          .from('registrations')
+          .delete()
+          .eq('id', id);
+
+        if (!error) {
+          inMemoryRegistrations.delete(id);
+          return true;
+        } else {
+          console.error('[RegistrationService] deleteRegistration error:', error.message);
+        }
+      } catch (err: any) {
+        console.error('[RegistrationService] deleteRegistration exception:', err.message);
+      }
+    }
+
+    if (inMemoryRegistrations.has(id)) {
+      inMemoryRegistrations.delete(id);
+      return true;
+    }
+    return false;
+  }
+
   /** Resend ticket email */
   static async resendTicketEmail(registrationId: string): Promise<boolean> {
     const reg = await this.findById(registrationId);

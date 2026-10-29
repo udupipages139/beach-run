@@ -187,12 +187,17 @@ CREATE TABLE public.registrations (
 ### 2. Admin Panel & Gate Scanner
 - **Access**: Open `/admin` or click "ADMIN ACCESS" in header / footer.
 - **Authentication**: JWT authentication with `httpOnly` secure cookies.
+- **Updating Admin Credentials**:
+  - Update `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `server/.env`.
+  - Run `npx tsx scripts/update-admin.ts` (or `npm run` from `server`) to sync the bcrypt password hash to the Supabase `admins` database table.
 - **Dashboard Tab**:
   - Live revenue, total registrations, category breakdowns, and check-in counters.
 - **Runners Tab**:
   - Searchable by name, email, phone, ticket ID, or transaction ID.
   - Filter by category, payment status, or checked-in status.
-  - View payment proof screenshots, resend ticket emails, or manual approval.
+  - **Edit Runner**: Modify runner details, category, bib number, t-shirt size, payment status, check-in state, emergency contact, and admin notes via modal (`PUT /api/admin/registrations/:id`).
+  - **Delete Runner**: Permanently delete registrations and audit logs with a safety confirmation modal (`DELETE /api/admin/registrations/:id`).
+  - View payment proof screenshots, resend ticket emails, or trigger manual approval.
   - CSV Export.
 - **Gate Scanner Tab (`/admin/scanner`)**:
   - Real-time camera scanner via `html5-qrcode` (rear camera preferred).

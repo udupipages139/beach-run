@@ -19,7 +19,9 @@ import {
   adminApproveController,
   adminScreenshotController,
   adminExportController,
-  adminCheckInCountController
+  adminCheckInCountController,
+  adminUpdateRegistrationController,
+  adminDeleteRegistrationController
 } from '../controllers/adminController.js';
 
 const router = Router();
@@ -83,5 +85,11 @@ router.get('/admin/export.csv', adminAuthMiddleware, adminExportController);
 
 // Checked-in count (for scanner badge)
 router.get('/admin/checkin-count', adminAuthMiddleware, adminCheckInCountController);
+
+// Update runner registration
+router.put('/admin/registrations/:id', adminAuthMiddleware, adminUpdateRegistrationController);
+
+// Delete runner registration
+router.delete('/admin/registrations/:id', adminAuthMiddleware, adminDeleteRegistrationController);
 
 export default router;

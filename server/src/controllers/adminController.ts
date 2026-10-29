@@ -330,3 +330,53 @@ export const adminCheckInCountController = async (req: Request, res: Response) =
     return res.status(500).json({ success: false, error: 'Failed to get count' });
   }
 };
+
+// ─── Update Registration (Edit runner) ───────────────────────────────────────
+
+export const adminUpdateRegistrationController = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ success: false, error: 'Registration ID is required' });
+    }
+
+    const reg = await RegistrationService.updateRegistration(id, req.body);
+    if (!reg) {
+      return res.status(404).json({ success: false, error: 'Registration not found or update failed' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Runner updated successfully',
+      registration: reg
+    });
+  } catch (error: any) {
+    console.error('[AdminController] Update error:', error);
+    return res.status(500).json({ success: false, error: 'Failed to update runner', details: error.message });
+  }
+};
+
+// ─── Delete Registration (Delete runner) ─────────────────────────────────────
+
+export const adminDeleteRegistrationController = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ success: false, error: 'Registration ID is required' });
+    }
+
+    const deleted = await RegistrationService.deleteRegistration(id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: 'Registration not found or could not be deleted' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Runner deleted successfully'
+    });
+  } catch (error: any) {
+    console.error('[AdminController] Delete error:', error);
+    return res.status(500).json({ success: false, error: 'Failed to delete runner', details: error.message });
+  }
+};
+

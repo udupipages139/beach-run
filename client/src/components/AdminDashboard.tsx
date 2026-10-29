@@ -7,7 +7,8 @@ import {
   Users, IndianRupee, CheckCircle2, Clock, Sparkles, Search, Filter,
   Download, RefreshCw, ArrowLeft, ShieldCheck, CreditCard, Shirt,
   PhoneCall, Calendar, AlertCircle, Lock, LogOut, KeyRound, UserCheck,
-  QrCode, LayoutDashboard, List, Camera, Eye, Send, BadgeCheck, X
+  QrCode, LayoutDashboard, List, Camera, Eye, Send, BadgeCheck, X,
+  Pencil, Trash2
 } from 'lucide-react';
 import { GateScanner } from './GateScanner';
 
@@ -37,6 +38,7 @@ interface RegistrationRecord {
   emailSent?: boolean;
   checkedIn?: boolean;
   checkedInAt?: string;
+  adminNote?: string;
   createdAt: string;
 }
 
@@ -157,6 +159,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
   // Action feedback
   const [actionMsg, setActionMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
+  // Edit Runner Modal
+  const [editingReg, setEditingReg] = useState<RegistrationRecord | null>(null);
+  const [editForm, setEditForm] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    age: '',
+    categoryId: '5k',
+    categoryName: '5K Run',
+    tshirtSize: 'M',
+    bibNumber: '',
+    paymentStatus: 'PAID' as 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED',
+    amountINR: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    checkedIn: false,
+    adminNote: ''
+  });
+  const [editSaving, setEditSaving] = useState(false);
+
+  // Delete Runner Modal
+  const [deletingReg, setDeletingReg] = useState<RegistrationRecord | null>(null);
+  const [deleteSaving, setDeleteSaving] = useState(false);
+
   // ─── Auth ─────────────────────────────────────────────────────────────────
 
   const getAuthHeaders = useCallback((extra: Record<string, string> = {}) => {
@@ -260,6 +286,112 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
       showAction(data.success ? 'ok' : 'err', data.success ? 'Approved & ticket issued' : data.error);
       if (data.success) fetchRegistrations();
     } catch (_) { showAction('err', 'Approval failed'); }
+  };
+
+  const AVAILABLE_CATEGORIES = [
+    { id: '3k_fun', name: '3K Fun Run', price: 399 },
+    { id: '5k', name: '5K Run', price: 599 },
+    { id: '10k', name: '10K Run', price: 799 },
+    { id: '15k', name: '15K Run', price: 999 }
+  ];
+
+  const handleOpenEdit = (reg: RegistrationRecord) => {
+    setEditingReg(reg);
+    setEditForm({
+      fullName: reg.fullName || '',
+      email: reg.email || '',
+      phone: reg.phone || '',
+      age: reg.age ? String(reg.age) : '',
+      categoryId: reg.categoryId || '5k',
+      categoryName: reg.categoryName || '5K Run',
+      tshirtSize: reg.tshirtSize || 'M',
+      bibNumber: reg.bibNumber ? String(reg.bibNumber) : '',
+      paymentStatus: reg.paymentStatus || 'PENDING',
+      amountINR: reg.amountINR !== undefined ? String(reg.amountINR) : '0',
+      emergencyContactName: reg.emergencyContactName || '',
+      emergencyContactPhone: reg.emergencyContactPhone || '',
+      checkedIn: !!reg.checkedIn,
+      adminNote: reg.adminNote || ''
+    });
+  };
+
+  const handleCategoryChangeInEdit = (categoryId: string) => {
+    const matched = AVAILABLE_CATEGORIES.find(c => c.id === categoryId);
+    setEditForm(prev => ({
+      ...prev,
+      categoryId,
+      categoryName: matched ? matched.name : prev.categoryName,
+      amountINR: matched ? String(matched.price) : prev.amountINR
+    }));
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingReg) return;
+    setEditSaving(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/registrations/${editingReg.id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
+        credentials: 'include',
+        body: JSON.stringify({
+          fullName: editForm.fullName,
+          email: editForm.email,
+          phone: editForm.phone,
+          age: Number(editForm.age) || 0,
+          categoryId: editForm.categoryId,
+          categoryName: editForm.categoryName,
+          tshirtSize: editForm.tshirtSize,
+          bibNumber: editForm.bibNumber ? Number(editForm.bibNumber) : null,
+          paymentStatus: editForm.paymentStatus,
+          amountINR: Number(editForm.amountINR) || 0,
+          emergencyContactName: editForm.emergencyContactName,
+          emergencyContactPhone: editForm.emergencyContactPhone,
+          checkedIn: editForm.checkedIn,
+          adminNote: editForm.adminNote
+        })
+      });
+      const data = await safeFetchJson(res);
+      if (res.ok && data.success) {
+        showAction('ok', `Runner ${editForm.fullName} updated successfully!`);
+        setEditingReg(null);
+        fetchRegistrations();
+      } else {
+        showAction('err', data.error || 'Failed to update runner');
+      }
+    } catch (err: any) {
+      showAction('err', err.message || 'Error updating runner');
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleOpenDelete = (reg: RegistrationRecord) => {
+    setDeletingReg(reg);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingReg) return;
+    setDeleteSaving(true);
+    try {
+      const res = await fetch(`${API_URL}/admin/registrations/${deletingReg.id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      });
+      const data = await safeFetchJson(res);
+      if (res.ok && data.success) {
+        showAction('ok', `Registration for ${deletingReg.fullName} deleted`);
+        setDeletingReg(null);
+        fetchRegistrations();
+      } else {
+        showAction('err', data.error || 'Failed to delete runner');
+      }
+    } catch (err: any) {
+      showAction('err', err.message || 'Error deleting runner');
+    } finally {
+      setDeleteSaving(false);
+    }
   };
 
   const handleModalUploadScreenshot = async () => {
@@ -626,7 +758,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                     </div>
 
                     {/* Actions */}
-                    <div className="p-4 pt-0 flex gap-2">
+                    <div className="p-4 pt-0 flex gap-2 items-center">
                       <button
                         onClick={() => setSelectedScreenshotReg(reg)}
                         className="flex-1 flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 rounded-lg transition-colors"
@@ -643,6 +775,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                           <span>Approve</span>
                         </button>
                       )}
+                      <button
+                        onClick={() => handleOpenEdit(reg)}
+                        title="Edit Runner Details"
+                        className="p-2 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-lg transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5 text-[#FF7A30]" />
+                      </button>
+                      <button
+                        onClick={() => handleOpenDelete(reg)}
+                        title="Delete Runner"
+                        className="p-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -789,8 +935,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                               <span className="text-slate-400">—</span>
                             )}
                           </td>
-                          <td className="py-4 px-4">
-                            <div className="flex flex-col gap-1">
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            <div className="flex flex-col gap-1.5">
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() => handleOpenEdit(reg)}
+                                  title="Edit Runner Details"
+                                  className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded text-[11px] font-bold transition-all shadow-xs"
+                                >
+                                  <Pencil className="w-3 h-3 text-[#FF7A30]" />
+                                  <span>Edit</span>
+                                </button>
+                                <button
+                                  onClick={() => handleOpenDelete(reg)}
+                                  title="Delete Runner"
+                                  className="flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded text-[11px] font-bold transition-all shadow-xs"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                  <span>Delete</span>
+                                </button>
+                              </div>
                               {reg.paymentStatus === 'PAID' && (
                                 <button onClick={() => handleResendEmail(reg.id)}
                                   className="flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
@@ -954,6 +1118,294 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ─── Edit Runner Modal ────────────────────────────────────────── */}
+      {editingReg && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 my-8 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#FF7A30] to-[#FFB347] flex items-center justify-center text-white shadow-md">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-thunder font-black text-2xl text-slate-900 leading-none">EDIT RUNNER</h3>
+                  <p className="font-mono text-xs text-slate-500 mt-0.5">{editingReg.registrationNumber} {editingReg.bibNumber ? `• Bib #${editingReg.bibNumber}` : ''}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingReg(null)}
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Edit Form */}
+            <form onSubmit={handleSaveEdit} className="space-y-4 text-xs font-sans">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* Full Name */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Runner Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.fullName}
+                    onChange={e => setEditForm(prev => ({ ...prev, fullName: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Email Address *</label>
+                  <input
+                    type="email"
+                    required
+                    value={editForm.email}
+                    onChange={e => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                  />
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Phone Number *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={editForm.phone}
+                    onChange={e => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                  />
+                </div>
+
+                {/* Age */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Age *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="110"
+                    required
+                    value={editForm.age}
+                    onChange={e => setEditForm(prev => ({ ...prev, age: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                  />
+                </div>
+
+                {/* Race Category */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Race Category *</label>
+                  <select
+                    value={editForm.categoryId}
+                    onChange={e => handleCategoryChangeInEdit(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                  >
+                    {AVAILABLE_CATEGORIES.map(c => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} (₹{c.price})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* T-Shirt Size */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">T-Shirt Size</label>
+                  <select
+                    value={editForm.tshirtSize}
+                    onChange={e => setEditForm(prev => ({ ...prev, tshirtSize: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                  >
+                    {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Bib Number */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Bib Number</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 2004"
+                    value={editForm.bibNumber}
+                    onChange={e => setEditForm(prev => ({ ...prev, bibNumber: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                  />
+                </div>
+
+                {/* Payment Status */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Payment Status</label>
+                  <select
+                    value={editForm.paymentStatus}
+                    onChange={e => setEditForm(prev => ({ ...prev, paymentStatus: e.target.value as any }))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                  >
+                    <option value="PAID">PAID</option>
+                    <option value="PENDING">PENDING</option>
+                    <option value="FAILED">FAILED</option>
+                    <option value="REFUNDED">REFUNDED</option>
+                  </select>
+                </div>
+
+                {/* Amount Paid */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Amount (₹)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editForm.amountINR}
+                    onChange={e => setEditForm(prev => ({ ...prev, amountINR: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                  />
+                </div>
+
+                {/* Check-In Status */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Race Day Check-In</label>
+                  <select
+                    value={editForm.checkedIn ? 'YES' : 'NO'}
+                    onChange={e => setEditForm(prev => ({ ...prev, checkedIn: e.target.value === 'YES' }))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                  >
+                    <option value="NO">Not Checked In</option>
+                    <option value="YES">Checked In (Validated)</option>
+                  </select>
+                </div>
+
+                {/* Emergency Contact Name */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Emergency Contact Name</label>
+                  <input
+                    type="text"
+                    value={editForm.emergencyContactName}
+                    onChange={e => setEditForm(prev => ({ ...prev, emergencyContactName: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                  />
+                </div>
+
+                {/* Emergency Contact Phone */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Emergency Contact Phone</label>
+                  <input
+                    type="tel"
+                    value={editForm.emergencyContactPhone}
+                    onChange={e => setEditForm(prev => ({ ...prev, emergencyContactPhone: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                  />
+                </div>
+              </div>
+
+              {/* Admin Note */}
+              <div>
+                <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Admin Remarks / Note</label>
+                <textarea
+                  rows={2}
+                  placeholder="Optional internal remarks about this registration..."
+                  value={editForm.adminNote}
+                  onChange={e => setEditForm(prev => ({ ...prev, adminNote: e.target.value }))}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg p-3 text-slate-900 text-xs focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingReg(null)}
+                  className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold uppercase tracking-wider text-xs transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSaving}
+                  className="px-5 py-2 rounded-lg bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white font-bold uppercase tracking-wider text-xs shadow-md hover:opacity-95 disabled:opacity-60 transition-all flex items-center gap-1.5"
+                >
+                  {editSaving ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <span>Save Changes</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Delete Runner Confirmation Modal ──────────────────────────── */}
+      {deletingReg && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <h3 className="font-thunder font-black text-2xl text-slate-900">DELETE REGISTRATION?</h3>
+              <p className="text-xs text-slate-500">
+                Are you sure you want to delete runner <strong className="text-slate-800">{deletingReg.fullName}</strong>?
+              </p>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-1 font-mono">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Reg #:</span>
+                <span className="font-bold text-slate-800">{deletingReg.registrationNumber}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Category:</span>
+                <span className="font-bold text-slate-800">{deletingReg.categoryName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Email:</span>
+                <span className="font-bold text-slate-800">{deletingReg.email}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Bib Number:</span>
+                <span className="font-bold text-[#FF7A30]">#{deletingReg.bibNumber || 'None'}</span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg p-2.5 leading-relaxed">
+              ⚠️ <strong>Warning:</strong> This permanently deletes this runner, their ticket, and any check-in audit records from the database. This action cannot be undone.
+            </p>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                disabled={deleteSaving}
+                onClick={() => setDeletingReg(null)}
+                className="flex-1 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold uppercase tracking-wider text-xs transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleteSaving}
+                onClick={handleConfirmDelete}
+                className="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold uppercase tracking-wider text-xs shadow-md transition-all flex items-center justify-center gap-1.5 disabled:opacity-60"
+              >
+                {deleteSaving ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <span>Yes, Delete</span>
+                )}
+              </button>
             </div>
           </div>
         </div>

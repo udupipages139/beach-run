@@ -12,6 +12,7 @@
     "simulate-webhook": "tsx scripts/simulate-webhook.ts",
     "test:webhook": "tsx scripts/test-webhook-suite.ts",
     "test:smtp": "tsx scripts/test-smtp.ts",
+    "admin:update": "tsx scripts/update-admin.ts",
     "db:check": "tsx scripts/check-registrations.ts",
     "db:prisma": "tsx scripts/test-prisma.ts"
   },
