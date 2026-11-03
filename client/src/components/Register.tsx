@@ -64,7 +64,14 @@ export const Register: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: name === 'age' ? Number(value) : value }));
+    let cleaned: string | number = value;
+    if (name === 'age') {
+      cleaned = Number(value);
+    } else if (name === 'phone' || name === 'emergencyContactPhone') {
+      // Strip country code, spaces, dashes — keep only digits, max 10
+      cleaned = value.replace(/^\+91\s*/, '').replace(/\D/g, '').slice(0, 10);
+    }
+    setFormData(prev => ({ ...prev, [name]: cleaned }));
   };
 
   // ─── Form Submit & Payment ──────────────────────────────────────────────────
@@ -117,7 +124,8 @@ export const Register: React.FC = () => {
         prefill: {
           name: formData.fullName,
           email: formData.email,
-          contact: formData.phone
+          // Razorpay requires exactly 10 digits — strip +91, spaces, dashes
+          contact: formData.phone.replace(/^\+91\s*/, '').replace(/\D/g, '').slice(-10)
         },
         notes: {
           category: selectedCategory.name,
@@ -416,7 +424,8 @@ export const Register: React.FC = () => {
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Phone *</label>
                     <input type="tel" name="phone" required value={formData.phone} onChange={handleInputChange}
-                      placeholder="+91 9876543210"
+                      placeholder="10-digit mobile number"
+                      maxLength={10}
                       className="w-full bg-white border border-gray-300 focus:border-[#FF7A30] focus:outline-none px-4 py-2.5 text-gray-900" />
                   </div>
                 </div>
