@@ -607,7 +607,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     ADMIN DASHBOARD
                   </h1>
                   <p className="text-[9px] font-mono text-slate-400 tracking-wider uppercase">
-                    Beach Run 2026
+                    Beach Run 2027
                   </p>
                 </div>
               </div>

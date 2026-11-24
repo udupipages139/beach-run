@@ -19,7 +19,7 @@ export const Footer: React.FC = () => {
                   UDUPIPAGES
                 </span>
                 <span className="text-[10px] sm:text-[11px] text-[#00A3FF] tracking-widest uppercase font-extrabold block">
-                  BEACH RUN 2026
+                  BEACH RUN 2027
                 </span>
               </div>
             </div>
