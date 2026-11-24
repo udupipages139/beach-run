@@ -1,7 +1,7 @@
 {
   "name": "udupipages-beach-run-server",
   "version": "1.0.0",
-  "description": "Backend API for Udupipages Beach Run 2026",
+  "description": "Backend API for Udupipages Beach Run 2027",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
