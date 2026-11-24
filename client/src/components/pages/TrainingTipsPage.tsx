@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import { BlogPostDetail } from '../BlogPostDetail';
-import { blogArticles } from '../../data/blogArticles';
+import React, { useEffect } from "react";
+import { BlogPostDetail } from "../BlogPostDetail";
+import { blogArticles } from "../../data/blogArticles";
 
 interface PageProps {
   onBackToHome?: () => void;
@@ -13,11 +13,12 @@ export const TrainingTipsPage: React.FC<PageProps> = ({
   onNavigateToPost,
   onRegisterClick,
 }) => {
-  const post = blogArticles.find((a) => a.id === 'conquering-the-sand') || blogArticles[0];
+  const post =
+    blogArticles.find((a) => a.id === "conquering-the-sand") || blogArticles[0];
 
   useEffect(() => {
-    document.title = `${post.title} — Udupipages Beach Run 2026`;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.title = `${post.title} — Udupipages Beach Run 2027`;
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [post]);
 
   return (
@@ -27,7 +28,7 @@ export const TrainingTipsPage: React.FC<PageProps> = ({
         if (onBackToHome) {
           onBackToHome();
         } else {
-          window.location.hash = 'blog-page';
+          window.location.hash = "blog-page";
         }
       }}
       onNavigateToPost={(id) => {

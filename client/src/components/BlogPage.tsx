@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Newspaper,
   Calendar,
@@ -11,43 +11,62 @@ import {
   User,
   Filter,
   TrendingUp,
-  CheckCircle2
-} from 'lucide-react';
-import { BlogPost, blogArticles } from '../data/blogArticles';
-import { BlogPostDetail } from './BlogPostDetail';
+  CheckCircle2,
+} from "lucide-react";
+import { BlogPost, blogArticles } from "../data/blogArticles";
+import { BlogPostDetail } from "./BlogPostDetail";
 
 interface BlogPageProps {
   onBackToHome: () => void;
   initialArticleId?: string | null;
 }
 
-export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticleId }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [selectedArticle, setSelectedArticle] = useState<BlogPost | null>(() => {
-    if (initialArticleId) {
-      return blogArticles.find((a) => a.id === initialArticleId || a.slug === initialArticleId) || null;
+export const BlogPage: React.FC<BlogPageProps> = ({
+  onBackToHome,
+  initialArticleId,
+}) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [selectedArticle, setSelectedArticle] = useState<BlogPost | null>(
+    () => {
+      if (initialArticleId) {
+        return (
+          blogArticles.find(
+            (a) => a.id === initialArticleId || a.slug === initialArticleId
+          ) || null
+        );
+      }
+      return null;
     }
-    return null;
-  });
+  );
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
   const [subscribed, setSubscribed] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
+  const [emailInput, setEmailInput] = useState("");
 
   useEffect(() => {
     if (initialArticleId) {
-      const art = blogArticles.find((a) => a.id === initialArticleId || a.slug === initialArticleId);
+      const art = blogArticles.find(
+        (a) => a.id === initialArticleId || a.slug === initialArticleId
+      );
       if (art) {
         setSelectedArticle(art);
       }
     }
   }, [initialArticleId]);
 
-  const categories = ['ALL', 'TRAINING & PERFORMANCE', 'ENVIRONMENTAL ACTION', 'COMMUNITY & EVENT', 'COURSE INSIGHTS', 'COMMUNITY IMPACT'];
+  const categories = [
+    "ALL",
+    "TRAINING & PERFORMANCE",
+    "ENVIRONMENTAL ACTION",
+    "COMMUNITY & EVENT",
+    "COURSE INSIGHTS",
+    "COMMUNITY IMPACT",
+  ];
 
   const filteredArticles = useMemo(() => {
     return blogArticles.filter((art) => {
-      const matchesCat = selectedCategory === 'ALL' || art.category === selectedCategory;
+      const matchesCat =
+        selectedCategory === "ALL" || art.category === selectedCategory;
       const matchesSearch =
         art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         art.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -71,7 +90,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
     e.preventDefault();
     if (emailInput.trim()) {
       setSubscribed(true);
-      setEmailInput('');
+      setEmailInput("");
     }
   };
 
@@ -82,21 +101,25 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
         post={selectedArticle}
         onBackToBlog={() => {
           setSelectedArticle(null);
-          window.location.hash = 'blog-page';
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.location.hash = "blog-page";
+          window.scrollTo({ top: 0, behavior: "smooth" });
         }}
         onNavigateToPost={(postId) => {
-          const next = blogArticles.find((a) => a.id === postId || a.slug === postId);
+          const next = blogArticles.find(
+            (a) => a.id === postId || a.slug === postId
+          );
           if (next) {
             setSelectedArticle(next);
             window.location.hash = `blog-page-${next.id}`;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: "smooth" });
           }
         }}
         onRegisterClick={() => {
           onBackToHome();
           setTimeout(() => {
-            document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' });
+            document
+              .getElementById("register")
+              ?.scrollIntoView({ behavior: "smooth" });
           }, 150);
         }}
       />
@@ -105,7 +128,6 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
 
   return (
     <div className="min-h-screen bg-slate-50 text-[#0A0A0A] font-sans pb-24 pt-20">
-      
       {/* Top Breadcrumb & Navigation Header */}
       <div className="bg-white border-b border-slate-200 sticky top-16 z-30 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
@@ -120,13 +142,14 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
           <div className="flex items-center space-x-3 text-xs text-slate-500 font-mono">
             <span>UDUPIPAGES OFFICIAL BULLETIN</span>
             <span>•</span>
-            <span className="text-[#00A3FF] font-bold">{blogArticles.length} STORIES PUBLISHED</span>
+            <span className="text-[#00A3FF] font-bold">
+              {blogArticles.length} STORIES PUBLISHED
+            </span>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        
         {/* Page Hero Header */}
         <div className="mb-10 text-center sm:text-left space-y-3 border-b border-slate-200 pb-8">
           <div className="inline-flex items-center space-x-2 px-3 py-1 bg-sky-50 border border-[#00A3FF]/40 rounded-full text-xs font-semibold tracking-widest text-[#00A3FF] uppercase">
@@ -134,15 +157,18 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
             <span>OFFICIAL RACE JOURNAL & PRESS DESK</span>
           </div>
           <h1 className="font-thunder text-4xl sm:text-6xl md:text-7xl font-extrabold text-[#0A0A0A] uppercase tracking-wide">
-            UDUPI BEACH RUN <span className="text-gradient">BLOG & STORIES</span>
+            UDUPI BEACH RUN{" "}
+            <span className="text-gradient">BLOG & STORIES</span>
           </h1>
           <p className="text-sm sm:text-base text-slate-600 font-normal max-w-3xl leading-relaxed">
-            In-depth guides on coastal sand training, biomechanics, environmental conservation, and official updates for Udupipages Beach Run 2026.
+            In-depth guides on coastal sand training, biomechanics,
+            environmental conservation, and official updates for Udupipages
+            Beach Run 2027.
           </p>
         </div>
 
         {/* Featured Lead Article */}
-        {selectedCategory === 'ALL' && !searchQuery && (
+        {selectedCategory === "ALL" && !searchQuery && (
           <div className="mb-14 bg-white border border-slate-200 shadow-md overflow-hidden group hover:border-[#00A3FF] transition-all">
             <div className="grid grid-cols-1 lg:grid-cols-12">
               <div className="lg:col-span-7 relative h-72 lg:h-auto min-h-[320px] overflow-hidden bg-slate-900">
@@ -160,11 +186,13 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3 text-xs text-slate-500 font-mono">
                     <span className="flex items-center text-[#00A3FF] font-bold">
-                      <Calendar className="w-3.5 h-3.5 mr-1" /> {featuredArticle.date}
+                      <Calendar className="w-3.5 h-3.5 mr-1" />{" "}
+                      {featuredArticle.date}
                     </span>
                     <span>•</span>
                     <span className="flex items-center">
-                      <Clock className="w-3.5 h-3.5 text-[#00A3FF] mr-1" /> {featuredArticle.readTime}
+                      <Clock className="w-3.5 h-3.5 text-[#00A3FF] mr-1" />{" "}
+                      {featuredArticle.readTime}
                     </span>
                   </div>
 
@@ -191,7 +219,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
                     onClick={() => {
                       setSelectedArticle(featuredArticle);
                       window.location.hash = `blog-page-${featuredArticle.id}`;
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                      window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     className="px-5 py-2.5 bg-sunset-gradient text-white font-sans text-xs uppercase font-extrabold tracking-wider hover:opacity-95 flex items-center space-x-2"
                   >
@@ -218,7 +246,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => setSearchQuery("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-black"
               >
                 <X className="w-4 h-4" />
@@ -237,8 +265,8 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap border ${
                     active
-                      ? 'bg-[#00A3FF] text-white border-[#00A3FF] shadow-xs'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-[#00A3FF]'
+                      ? "bg-[#00A3FF] text-white border-[#00A3FF] shadow-xs"
+                      : "bg-slate-50 text-slate-700 border-slate-200 hover:border-[#00A3FF]"
                   }`}
                 >
                   {cat}
@@ -252,12 +280,16 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
         {filteredArticles.length === 0 ? (
           <div className="text-center py-16 bg-white border border-slate-200 p-8 space-y-3">
             <Newspaper className="w-10 h-10 text-slate-300 mx-auto" />
-            <h3 className="font-thunder text-2xl text-slate-700">NO ARTICLES MATCH YOUR SEARCH</h3>
-            <p className="text-xs text-slate-500">Try adjusting your category filter or keyword terms.</p>
+            <h3 className="font-thunder text-2xl text-slate-700">
+              NO ARTICLES MATCH YOUR SEARCH
+            </h3>
+            <p className="text-xs text-slate-500">
+              Try adjusting your category filter or keyword terms.
+            </p>
             <button
               onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('ALL');
+                setSearchQuery("");
+                setSelectedCategory("ALL");
               }}
               className="mt-3 px-4 py-2 bg-slate-100 text-xs font-bold uppercase text-[#00A3FF]"
             >
@@ -274,7 +306,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
                   onClick={() => {
                     setSelectedArticle(art);
                     window.location.hash = `blog-page-${art.id}`;
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   className="group cursor-pointer bg-white border border-slate-200 hover:border-[#00A3FF] transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-md"
                 >
@@ -287,7 +319,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-70" />
-                      
+
                       <span className="absolute top-3 left-3 text-[10px] font-mono font-bold tracking-widest text-white bg-[#00A3FF] px-2.5 py-0.5 uppercase shadow-xs">
                         {art.category}
                       </span>
@@ -296,10 +328,10 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
                         onClick={(e) => toggleBookmark(art.id, e)}
                         className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-colors ${
                           isBookmarked
-                            ? 'bg-[#00A3FF] text-white'
-                            : 'bg-black/40 text-white hover:bg-black/70'
+                            ? "bg-[#00A3FF] text-white"
+                            : "bg-black/40 text-white hover:bg-black/70"
                         }`}
-                        title={isBookmarked ? 'Bookmarked' : 'Bookmark story'}
+                        title={isBookmarked ? "Bookmarked" : "Bookmark story"}
                       >
                         <Bookmark className="w-3.5 h-3.5" />
                       </button>
@@ -308,9 +340,15 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
                     {/* Meta & Title */}
                     <div className="p-6 space-y-3">
                       <div className="flex items-center space-x-3 text-[11px] text-slate-500 font-mono">
-                        <span className="flex items-center"><Calendar className="w-3.5 h-3.5 text-[#00A3FF] mr-1" /> {art.date}</span>
+                        <span className="flex items-center">
+                          <Calendar className="w-3.5 h-3.5 text-[#00A3FF] mr-1" />{" "}
+                          {art.date}
+                        </span>
                         <span>•</span>
-                        <span className="flex items-center"><Clock className="w-3.5 h-3.5 text-[#00A3FF] mr-1" /> {art.readTime}</span>
+                        <span className="flex items-center">
+                          <Clock className="w-3.5 h-3.5 text-[#00A3FF] mr-1" />{" "}
+                          {art.readTime}
+                        </span>
                       </div>
 
                       <h3 className="font-thunder text-2xl text-[#0A0A0A] group-hover:text-[#00A3FF] transition-colors leading-tight">
@@ -326,7 +364,9 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
                   {/* Card Footer */}
                   <div className="p-6 pt-0">
                     <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#00A3FF] uppercase tracking-wider">
-                      <span className="group-hover:translate-x-1 transition-transform">READ FULL STORY</span>
+                      <span className="group-hover:translate-x-1 transition-transform">
+                        READ FULL STORY
+                      </span>
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
@@ -347,16 +387,22 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
               GET THE LATEST RACE ANNOUNCEMENTS DIRECT TO YOUR INBOX
             </h3>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-              Receive route updates, training guides, and race-day logistics directly from the Udupipages Organizing Committee.
+              Receive route updates, training guides, and race-day logistics
+              directly from the Udupipages Organizing Committee.
             </p>
 
             {subscribed ? (
               <div className="p-4 bg-emerald-950/80 border border-emerald-500 text-emerald-300 text-xs font-bold uppercase flex items-center space-x-2">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                <span>SUCCESS! YOU ARE SUBSCRIBED TO THE UDUPI BEACH RUN DISPATCH.</span>
+                <span>
+                  SUCCESS! YOU ARE SUBSCRIBED TO THE UDUPI BEACH RUN DISPATCH.
+                </span>
               </div>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 pt-2">
+              <form
+                onSubmit={handleSubscribe}
+                className="flex flex-col sm:flex-row gap-3 pt-2"
+              >
                 <input
                   type="email"
                   required
@@ -375,7 +421,6 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onBackToHome, initialArticle
             )}
           </div>
         </div>
-
       </div>
     </div>
   );
