@@ -191,7 +191,7 @@ export const Register: React.FC = () => {
         key: data.keyId,
         amount: data.amount!,
         currency: data.currency || "INR",
-        name: "Udupipages Beach Run 2026",
+        name: "Udupipages Beach Run 2027",
         description: `Registration for ${selectedCategory.name}`,
         image: "/images/logo.png",
         order_id: data.orderId!,

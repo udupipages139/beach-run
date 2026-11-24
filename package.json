@@ -2,7 +2,7 @@
   "name": "udupipages-beach-run",
   "version": "1.0.0",
   "private": true,
-  "description": "Master full-stack repository for Udupipages Beach Run 2026",
+  "description": "Master full-stack repository for Udupipages Beach Run 2027",
   "scripts": {
     "build": "npm run build --prefix client",
     "deploy": "npm run deploy --prefix client",

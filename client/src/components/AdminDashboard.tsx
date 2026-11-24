@@ -2,15 +2,40 @@
  * AdminDashboard.tsx — Full admin panel with JWT auth, stats, registrations table,
  * and the Gate Scanner (QR check-in) page embedded as a tab.
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  Users, IndianRupee, CheckCircle2, Clock, Sparkles, Search, Filter,
-  Download, RefreshCw, ArrowLeft, ShieldCheck, CreditCard, Shirt,
-  PhoneCall, Calendar, AlertCircle, Lock, LogOut, KeyRound, UserCheck,
-  QrCode, LayoutDashboard, List, Camera, Eye, Send, BadgeCheck, X,
-  Pencil, Trash2
-} from 'lucide-react';
-import { GateScanner } from './GateScanner';
+  Users,
+  IndianRupee,
+  CheckCircle2,
+  Clock,
+  Sparkles,
+  Search,
+  Filter,
+  Download,
+  RefreshCw,
+  ArrowLeft,
+  ShieldCheck,
+  CreditCard,
+  Shirt,
+  PhoneCall,
+  Calendar,
+  AlertCircle,
+  Lock,
+  LogOut,
+  KeyRound,
+  UserCheck,
+  QrCode,
+  LayoutDashboard,
+  List,
+  Camera,
+  Eye,
+  Send,
+  BadgeCheck,
+  X,
+  Pencil,
+  Trash2,
+} from "lucide-react";
+import { GateScanner } from "./GateScanner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -27,7 +52,7 @@ interface RegistrationRecord {
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   experience?: string;
-  paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+  paymentStatus: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
   amountINR: number;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
@@ -49,16 +74,19 @@ interface AdminStats {
   totalFailedCount?: number;
   checkedInCount?: number;
   totalRevenueINR: number;
-  categoryStats: Record<string, { count: number; name: string; revenue: number; checkedIn?: number }>;
+  categoryStats: Record<
+    string,
+    { count: number; name: string; revenue: number; checkedIn?: number }
+  >;
 }
 
 interface AdminDashboardProps {
   onBackToHome: () => void;
 }
 
-type AdminView = 'dashboard' | 'registrations' | 'proofs' | 'scanner';
+type AdminView = "dashboard" | "registrations" | "proofs" | "scanner";
 
-import { API_BASE_URL as API_URL, safeFetchJson } from '../utils/api';
+import { API_BASE_URL as API_URL, safeFetchJson } from "../utils/api";
 
 // ─── Login Form ───────────────────────────────────────────────────────────────
 
@@ -66,8 +94,8 @@ const LoginForm: React.FC<{
   onLogin: (email: string, password: string) => Promise<string | null>;
   onBackToHome: () => void;
 }> = ({ onLogin, onBackToHome }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -87,8 +115,12 @@ const LoginForm: React.FC<{
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#FF7A30] to-[#FFB347] flex items-center justify-center mx-auto shadow-lg">
             <Lock className="w-7 h-7 text-white" />
           </div>
-          <h2 className="font-thunder font-black text-4xl tracking-wider text-[#0A0A0A] mt-3">ADMIN PORTAL</h2>
-          <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">Udupipages Beach Run 2026</p>
+          <h2 className="font-thunder font-black text-4xl tracking-wider text-[#0A0A0A] mt-3">
+            ADMIN PORTAL
+          </h2>
+          <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">
+            Udupipages Beach Run 2027
+          </p>
         </div>
 
         {error && (
@@ -100,34 +132,57 @@ const LoginForm: React.FC<{
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-slate-600 mb-1.5 font-semibold">Username / Email</label>
+            <label className="block text-xs font-mono uppercase tracking-wider text-slate-600 mb-1.5 font-semibold">
+              Username / Email
+            </label>
             <div className="relative">
               <UserCheck className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input type="text" required value={email} onChange={e => setEmail(e.target.value)}
+              <input
+                type="text"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter username or email"
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm text-black placeholder:text-slate-400 focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]" />
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm text-black placeholder:text-slate-400 focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+              />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-slate-600 mb-1.5 font-semibold">Password</label>
+            <label className="block text-xs font-mono uppercase tracking-wider text-slate-600 mb-1.5 font-semibold">
+              Password
+            </label>
             <div className="relative">
               <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm text-black placeholder:text-slate-400 focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]" />
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 text-sm text-black placeholder:text-slate-400 focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
+              />
             </div>
           </div>
-          <button type="submit" disabled={loading}
-            className="w-full py-3 bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white font-black uppercase tracking-wider text-xs rounded-lg hover:opacity-95 transition-all shadow-md disabled:opacity-60">
-            {loading ? 'Logging in...' : 'Log In to Dashboard'}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white font-black uppercase tracking-wider text-xs rounded-lg hover:opacity-95 transition-all shadow-md disabled:opacity-60"
+          >
+            {loading ? "Logging in..." : "Log In to Dashboard"}
           </button>
         </form>
 
         <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-xs">
-          <button onClick={onBackToHome} className="text-slate-600 hover:text-[#FF7A30] font-mono flex items-center gap-1 transition-colors">
-            <ArrowLeft className="w-3.5 h-3.5" /><span>Back to Website</span>
+          <button
+            onClick={onBackToHome}
+            className="text-slate-600 hover:text-[#FF7A30] font-mono flex items-center gap-1 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Website</span>
           </button>
-          <span className="text-slate-400 font-mono text-[10px]">Restricted Admin Area</span>
+          <span className="text-slate-400 font-mono text-[10px]">
+            Restricted Admin Area
+          </span>
         </div>
       </div>
     </div>
@@ -136,88 +191,109 @@ const LoginForm: React.FC<{
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) => {
-  const [authToken, setAuthToken] = useState<string | null>(() => sessionStorage.getItem('ubr_admin_jwt'));
-  const [currentView, setCurrentView] = useState<AdminView>('dashboard');
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({
+  onBackToHome,
+}) => {
+  const [authToken, setAuthToken] = useState<string | null>(() =>
+    sessionStorage.getItem("ubr_admin_jwt")
+  );
+  const [currentView, setCurrentView] = useState<AdminView>("dashboard");
   const [registrations, setRegistrations] = useState<RegistrationRecord[]>([]);
   const [stats, setStats] = useState<AdminStats | null>(null);
-  const [dbSource, setDbSource] = useState<'supabase' | 'in_memory' | null>(null);
+  const [dbSource, setDbSource] = useState<"supabase" | "in_memory" | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Screenshot modal & upload
-  const [selectedScreenshotReg, setSelectedScreenshotReg] = useState<RegistrationRecord | null>(null);
+  const [selectedScreenshotReg, setSelectedScreenshotReg] =
+    useState<RegistrationRecord | null>(null);
   const [modalUploadFile, setModalUploadFile] = useState<File | null>(null);
-  const [modalUploadTxId, setModalUploadTxId] = useState('');
+  const [modalUploadTxId, setModalUploadTxId] = useState("");
   const [modalUploading, setModalUploading] = useState(false);
 
   // Filters
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
-  const [categoryFilter, setCategoryFilter] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
 
   // Action feedback
-  const [actionMsg, setActionMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [actionMsg, setActionMsg] = useState<{
+    type: "ok" | "err";
+    text: string;
+  } | null>(null);
 
   // Edit Runner Modal
   const [editingReg, setEditingReg] = useState<RegistrationRecord | null>(null);
   const [editForm, setEditForm] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    age: '',
-    categoryId: '5k',
-    categoryName: '5K Run',
-    tshirtSize: 'M',
-    bibNumber: '',
-    paymentStatus: 'PAID' as 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED',
-    amountINR: '',
-    emergencyContactName: '',
-    emergencyContactPhone: '',
+    fullName: "",
+    email: "",
+    phone: "",
+    age: "",
+    categoryId: "5k",
+    categoryName: "5K Run",
+    tshirtSize: "M",
+    bibNumber: "",
+    paymentStatus: "PAID" as "PENDING" | "PAID" | "FAILED" | "REFUNDED",
+    amountINR: "",
+    emergencyContactName: "",
+    emergencyContactPhone: "",
     checkedIn: false,
-    adminNote: ''
+    adminNote: "",
   });
   const [editSaving, setEditSaving] = useState(false);
 
   // Delete Runner Modal
-  const [deletingReg, setDeletingReg] = useState<RegistrationRecord | null>(null);
+  const [deletingReg, setDeletingReg] = useState<RegistrationRecord | null>(
+    null
+  );
   const [deleteSaving, setDeleteSaving] = useState(false);
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
 
-  const getAuthHeaders = useCallback((extra: Record<string, string> = {}) => {
-    const headers: Record<string, string> = { ...extra };
-    const token = authToken || sessionStorage.getItem('ubr_admin_jwt');
-    if (token && token !== 'session' && token !== 'dev') {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    return headers;
-  }, [authToken]);
+  const getAuthHeaders = useCallback(
+    (extra: Record<string, string> = {}) => {
+      const headers: Record<string, string> = { ...extra };
+      const token = authToken || sessionStorage.getItem("ubr_admin_jwt");
+      if (token && token !== "session" && token !== "dev") {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      return headers;
+    },
+    [authToken]
+  );
 
-  const handleLogin = async (email: string, password: string): Promise<string | null> => {
+  const handleLogin = async (
+    email: string,
+    password: string
+  ): Promise<string | null> => {
     try {
       const res = await fetch(`${API_URL}/admin/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
       });
       const data = await safeFetchJson(res);
       if (res.ok && data.success) {
-        const token = data.token || 'session';
-        sessionStorage.setItem('ubr_admin_jwt', token);
+        const token = data.token || "session";
+        sessionStorage.setItem("ubr_admin_jwt", token);
         setAuthToken(token);
         return null;
       }
-      return data.error || 'Login failed';
+      return data.error || "Login failed";
     } catch (e: any) {
-      return 'Server unreachable. Check that the backend is running.';
+      return "Server unreachable. Check that the backend is running.";
     }
   };
 
   const handleLogout = async () => {
-    await fetch(`${API_URL}/admin/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
-    sessionStorage.removeItem('ubr_admin_jwt');
+    await fetch(`${API_URL}/admin/logout`, {
+      method: "POST",
+      credentials: "include",
+    }).catch(() => {});
+    sessionStorage.removeItem("ubr_admin_jwt");
     setAuthToken(null);
   };
 
@@ -229,34 +305,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
     try {
       const res = await fetch(`${API_URL}/admin/registrations`, {
         headers: getAuthHeaders(),
-        credentials: 'include'
+        credentials: "include",
       });
       const data = await safeFetchJson(res);
       if (res.status === 401) {
-        sessionStorage.removeItem('ubr_admin_jwt');
+        sessionStorage.removeItem("ubr_admin_jwt");
         setAuthToken(null);
-        setErrorMsg('Session expired or unauthorized. Please log in again.');
+        setErrorMsg("Session expired or unauthorized. Please log in again.");
         return;
       }
       if (res.ok && data.success) {
         setRegistrations(data.registrations || []);
         setStats(data.stats || null);
-        setDbSource(data.source || 'in_memory');
+        setDbSource(data.source || "in_memory");
       } else {
-        throw new Error(data.error || 'Failed to fetch records');
+        throw new Error(data.error || "Failed to fetch records");
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Cannot connect to server');
+      setErrorMsg(err.message || "Cannot connect to server");
     } finally {
       setLoading(false);
     }
   }, [getAuthHeaders]);
 
-  useEffect(() => { if (authToken) fetchRegistrations(); }, [authToken, fetchRegistrations]);
+  useEffect(() => {
+    if (authToken) fetchRegistrations();
+  }, [authToken, fetchRegistrations]);
 
   // ─── Actions ──────────────────────────────────────────────────────────────
 
-  const showAction = (type: 'ok' | 'err', text: string) => {
+  const showAction = (type: "ok" | "err", text: string) => {
     setActionMsg({ type, text });
     setTimeout(() => setActionMsg(null), 3000);
   };
@@ -264,64 +342,79 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
   const handleResendEmail = async (id: string) => {
     try {
       const res = await fetch(`${API_URL}/admin/registrations/${id}/resend`, {
-        method: 'POST',
+        method: "POST",
         headers: getAuthHeaders(),
-        credentials: 'include'
+        credentials: "include",
       });
       const data = await safeFetchJson(res);
-      showAction(data.emailSent ? 'ok' : 'err', data.message || 'Resend attempted');
-    } catch (_) { showAction('err', 'Resend failed'); }
+      showAction(
+        data.emailSent ? "ok" : "err",
+        data.message || "Resend attempted"
+      );
+    } catch (_) {
+      showAction("err", "Resend failed");
+    }
   };
 
   const handleApprove = async (id: string) => {
-    if (!window.confirm('Manually approve and issue ticket for this registration?')) return;
+    if (
+      !window.confirm(
+        "Manually approve and issue ticket for this registration?"
+      )
+    )
+      return;
     try {
       const res = await fetch(`${API_URL}/admin/registrations/${id}/approve`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({ note: 'Admin manual approval via dashboard' })
+        method: "POST",
+        credentials: "include",
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ note: "Admin manual approval via dashboard" }),
       });
       const data = await safeFetchJson(res);
-      showAction(data.success ? 'ok' : 'err', data.success ? 'Approved & ticket issued' : data.error);
+      showAction(
+        data.success ? "ok" : "err",
+        data.success ? "Approved & ticket issued" : data.error
+      );
       if (data.success) fetchRegistrations();
-    } catch (_) { showAction('err', 'Approval failed'); }
+    } catch (_) {
+      showAction("err", "Approval failed");
+    }
   };
 
   const AVAILABLE_CATEGORIES = [
-    { id: '3k_fun', name: '3K Fun Run', price: 399 },
-    { id: '5k', name: '5K Run', price: 599 },
-    { id: '10k', name: '10K Run', price: 799 },
-    { id: '15k', name: '15K Run', price: 999 }
+    { id: "3k_fun", name: "3K Fun Run", price: 399 },
+    { id: "5k", name: "5K Run", price: 599 },
+    { id: "10k", name: "10K Run", price: 799 },
+    { id: "15k", name: "15K Run", price: 999 },
   ];
 
   const handleOpenEdit = (reg: RegistrationRecord) => {
     setEditingReg(reg);
     setEditForm({
-      fullName: reg.fullName || '',
-      email: reg.email || '',
-      phone: reg.phone || '',
-      age: reg.age ? String(reg.age) : '',
-      categoryId: reg.categoryId || '5k',
-      categoryName: reg.categoryName || '5K Run',
-      tshirtSize: reg.tshirtSize || 'M',
-      bibNumber: reg.bibNumber ? String(reg.bibNumber) : '',
-      paymentStatus: reg.paymentStatus || 'PENDING',
-      amountINR: reg.amountINR !== undefined ? String(reg.amountINR) : '0',
-      emergencyContactName: reg.emergencyContactName || '',
-      emergencyContactPhone: reg.emergencyContactPhone || '',
+      fullName: reg.fullName || "",
+      email: reg.email || "",
+      phone: reg.phone || "",
+      age: reg.age ? String(reg.age) : "",
+      categoryId: reg.categoryId || "5k",
+      categoryName: reg.categoryName || "5K Run",
+      tshirtSize: reg.tshirtSize || "M",
+      bibNumber: reg.bibNumber ? String(reg.bibNumber) : "",
+      paymentStatus: reg.paymentStatus || "PENDING",
+      amountINR: reg.amountINR !== undefined ? String(reg.amountINR) : "0",
+      emergencyContactName: reg.emergencyContactName || "",
+      emergencyContactPhone: reg.emergencyContactPhone || "",
       checkedIn: !!reg.checkedIn,
-      adminNote: reg.adminNote || ''
+      adminNote: reg.adminNote || "",
     });
   };
 
   const handleCategoryChangeInEdit = (categoryId: string) => {
-    const matched = AVAILABLE_CATEGORIES.find(c => c.id === categoryId);
-    setEditForm(prev => ({
+    const matched = AVAILABLE_CATEGORIES.find((c) => c.id === categoryId);
+    setEditForm((prev) => ({
       ...prev,
       categoryId,
       categoryName: matched ? matched.name : prev.categoryName,
-      amountINR: matched ? String(matched.price) : prev.amountINR
+      amountINR: matched ? String(matched.price) : prev.amountINR,
     }));
   };
 
@@ -330,37 +423,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
     if (!editingReg) return;
     setEditSaving(true);
     try {
-      const res = await fetch(`${API_URL}/admin/registrations/${editingReg.id}`, {
-        method: 'PUT',
-        headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
-        credentials: 'include',
-        body: JSON.stringify({
-          fullName: editForm.fullName,
-          email: editForm.email,
-          phone: editForm.phone,
-          age: Number(editForm.age) || 0,
-          categoryId: editForm.categoryId,
-          categoryName: editForm.categoryName,
-          tshirtSize: editForm.tshirtSize,
-          bibNumber: editForm.bibNumber ? Number(editForm.bibNumber) : null,
-          paymentStatus: editForm.paymentStatus,
-          amountINR: Number(editForm.amountINR) || 0,
-          emergencyContactName: editForm.emergencyContactName,
-          emergencyContactPhone: editForm.emergencyContactPhone,
-          checkedIn: editForm.checkedIn,
-          adminNote: editForm.adminNote
-        })
-      });
+      const res = await fetch(
+        `${API_URL}/admin/registrations/${editingReg.id}`,
+        {
+          method: "PUT",
+          headers: getAuthHeaders({ "Content-Type": "application/json" }),
+          credentials: "include",
+          body: JSON.stringify({
+            fullName: editForm.fullName,
+            email: editForm.email,
+            phone: editForm.phone,
+            age: Number(editForm.age) || 0,
+            categoryId: editForm.categoryId,
+            categoryName: editForm.categoryName,
+            tshirtSize: editForm.tshirtSize,
+            bibNumber: editForm.bibNumber ? Number(editForm.bibNumber) : null,
+            paymentStatus: editForm.paymentStatus,
+            amountINR: Number(editForm.amountINR) || 0,
+            emergencyContactName: editForm.emergencyContactName,
+            emergencyContactPhone: editForm.emergencyContactPhone,
+            checkedIn: editForm.checkedIn,
+            adminNote: editForm.adminNote,
+          }),
+        }
+      );
       const data = await safeFetchJson(res);
       if (res.ok && data.success) {
-        showAction('ok', `Runner ${editForm.fullName} updated successfully!`);
+        showAction("ok", `Runner ${editForm.fullName} updated successfully!`);
         setEditingReg(null);
         fetchRegistrations();
       } else {
-        showAction('err', data.error || 'Failed to update runner');
+        showAction("err", data.error || "Failed to update runner");
       }
     } catch (err: any) {
-      showAction('err', err.message || 'Error updating runner');
+      showAction("err", err.message || "Error updating runner");
     } finally {
       setEditSaving(false);
     }
@@ -374,21 +470,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
     if (!deletingReg) return;
     setDeleteSaving(true);
     try {
-      const res = await fetch(`${API_URL}/admin/registrations/${deletingReg.id}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-        credentials: 'include'
-      });
+      const res = await fetch(
+        `${API_URL}/admin/registrations/${deletingReg.id}`,
+        {
+          method: "DELETE",
+          headers: getAuthHeaders(),
+          credentials: "include",
+        }
+      );
       const data = await safeFetchJson(res);
       if (res.ok && data.success) {
-        showAction('ok', `Registration for ${deletingReg.fullName} deleted`);
+        showAction("ok", `Registration for ${deletingReg.fullName} deleted`);
         setDeletingReg(null);
         fetchRegistrations();
       } else {
-        showAction('err', data.error || 'Failed to delete runner');
+        showAction("err", data.error || "Failed to delete runner");
       }
     } catch (err: any) {
-      showAction('err', err.message || 'Error deleting runner');
+      showAction("err", err.message || "Error deleting runner");
     } finally {
       setDeleteSaving(false);
     }
@@ -399,57 +498,77 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
     setModalUploading(true);
     try {
       const formData = new FormData();
-      formData.append('screenshot', modalUploadFile);
-      if (modalUploadTxId) formData.append('transactionId', modalUploadTxId);
+      formData.append("screenshot", modalUploadFile);
+      if (modalUploadTxId) formData.append("transactionId", modalUploadTxId);
 
-      const res = await fetch(`${API_URL}/registrations/${selectedScreenshotReg.id}/screenshot`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: formData
-      });
+      const res = await fetch(
+        `${API_URL}/registrations/${selectedScreenshotReg.id}/screenshot`,
+        {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: formData,
+        }
+      );
       const data = await safeFetchJson(res);
       if (res.ok && data.success) {
-        showAction('ok', 'Payment screenshot saved successfully!');
+        showAction("ok", "Payment screenshot saved successfully!");
         setModalUploadFile(null);
-        setModalUploadTxId('');
+        setModalUploadTxId("");
         // Update local state
-        const updatedUrl = data.screenshotUrl || URL.createObjectURL(modalUploadFile);
-        setSelectedScreenshotReg(prev => prev ? { ...prev, paymentScreenshotUrl: updatedUrl, transactionId: modalUploadTxId || prev.transactionId } : null);
+        const updatedUrl =
+          data.screenshotUrl || URL.createObjectURL(modalUploadFile);
+        setSelectedScreenshotReg((prev) =>
+          prev
+            ? {
+                ...prev,
+                paymentScreenshotUrl: updatedUrl,
+                transactionId: modalUploadTxId || prev.transactionId,
+              }
+            : null
+        );
         fetchRegistrations();
       } else {
-        showAction('err', data.error || 'Failed to upload screenshot');
+        showAction("err", data.error || "Failed to upload screenshot");
       }
     } catch (e: any) {
-      showAction('err', e.message || 'Upload error');
+      showAction("err", e.message || "Upload error");
     } finally {
       setModalUploading(false);
     }
   };
 
   const exportCSV = async () => {
-    const token = authToken || sessionStorage.getItem('ubr_admin_jwt');
-    const query = token && token !== 'session' && token !== 'dev' ? `?token=${encodeURIComponent(token)}` : '';
-    window.open(`${API_URL}/admin/export.csv${query}`, '_blank');
+    const token = authToken || sessionStorage.getItem("ubr_admin_jwt");
+    const query =
+      token && token !== "session" && token !== "dev"
+        ? `?token=${encodeURIComponent(token)}`
+        : "";
+    window.open(`${API_URL}/admin/export.csv${query}`, "_blank");
   };
 
   // ─── Filter ───────────────────────────────────────────────────────────────
 
-  const filtered = registrations.filter(reg => {
+  const filtered = registrations.filter((reg) => {
     const q = searchQuery.toLowerCase();
-    const matchSearch = !q ||
+    const matchSearch =
+      !q ||
       reg.fullName.toLowerCase().includes(q) ||
       reg.email.toLowerCase().includes(q) ||
       reg.phone.includes(q) ||
       reg.registrationNumber.toLowerCase().includes(q) ||
-      (reg.razorpayPaymentId?.toLowerCase().includes(q)) ||
-      (reg.transactionId?.toLowerCase().includes(q)) ||
-      (reg.ticketId?.toLowerCase().includes(q));
-    const matchStatus = statusFilter === 'ALL' || reg.paymentStatus === statusFilter;
-    const matchCat = categoryFilter === 'ALL' || reg.categoryId === categoryFilter;
+      reg.razorpayPaymentId?.toLowerCase().includes(q) ||
+      reg.transactionId?.toLowerCase().includes(q) ||
+      reg.ticketId?.toLowerCase().includes(q);
+    const matchStatus =
+      statusFilter === "ALL" || reg.paymentStatus === statusFilter;
+    const matchCat =
+      categoryFilter === "ALL" || reg.categoryId === categoryFilter;
     return matchSearch && matchStatus && matchCat;
   });
 
-  const registrationsWithProof = registrations.filter(r => !!r.paymentScreenshotUrl);
+  const registrationsWithProof = registrations.filter(
+    (r) => !!r.paymentScreenshotUrl
+  );
 
   // ─── Not logged in ────────────────────────────────────────────────────────
 
@@ -459,8 +578,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
 
   // ─── Scanner View ─────────────────────────────────────────────────────────
 
-  if (currentView === 'scanner') {
-    return <GateScanner authToken={authToken || undefined} onBack={() => setCurrentView('dashboard')} />;
+  if (currentView === "scanner") {
+    return (
+      <GateScanner
+        authToken={authToken || undefined}
+        onBack={() => setCurrentView("dashboard")}
+      />
+    );
   }
 
   // ─── Header ───────────────────────────────────────────────────────────────
@@ -479,22 +603,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                   <ShieldCheck className="w-4 h-4 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className="font-thunder font-black text-xl tracking-wider leading-none text-[#0A0A0A] truncate">ADMIN DASHBOARD</h1>
-                  <p className="text-[9px] font-mono text-slate-400 tracking-wider uppercase">Beach Run 2026</p>
+                  <h1 className="font-thunder font-black text-xl tracking-wider leading-none text-[#0A0A0A] truncate">
+                    ADMIN DASHBOARD
+                  </h1>
+                  <p className="text-[9px] font-mono text-slate-400 tracking-wider uppercase">
+                    Beach Run 2026
+                  </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-1.5 flex-shrink-0">
-                <button onClick={fetchRegistrations} disabled={loading}
-                  className="p-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 rounded-lg disabled:opacity-50" title="Refresh data">
-                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                <button
+                  onClick={fetchRegistrations}
+                  disabled={loading}
+                  className="p-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 rounded-lg disabled:opacity-50"
+                  title="Refresh data"
+                >
+                  <RefreshCw
+                    className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
+                  />
                 </button>
-                <button onClick={onBackToHome}
-                  className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider">
-                  <ArrowLeft className="w-3.5 h-3.5" /><span>Site</span>
+                <button
+                  onClick={onBackToHome}
+                  className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Site</span>
                 </button>
-                <button onClick={handleLogout}
-                  className="p-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-lg" title="Log Out">
+                <button
+                  onClick={handleLogout}
+                  className="p-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-lg"
+                  title="Log Out"
+                >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -502,18 +642,43 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
 
             {/* Middle row: 4 Equal Navigation Tabs */}
             <div className="grid grid-cols-4 gap-1 p-1 bg-slate-100 border border-slate-200 rounded-xl">
-              {([
-                { id: 'dashboard', icon: <LayoutDashboard className="w-3.5 h-3.5" />, label: 'Stats' },
-                { id: 'registrations', icon: <List className="w-3.5 h-3.5" />, label: 'Runners' },
-                { id: 'proofs', icon: <Eye className="w-3.5 h-3.5" />, label: `Proofs${registrationsWithProof.length ? ` (${registrationsWithProof.length})` : ''}` },
-                { id: 'scanner', icon: <Camera className="w-3.5 h-3.5" />, label: 'Scanner' }
-              ] as const).map(tab => (
-                <button key={tab.id} onClick={() => setCurrentView(tab.id)}
+              {(
+                [
+                  {
+                    id: "dashboard",
+                    icon: <LayoutDashboard className="w-3.5 h-3.5" />,
+                    label: "Stats",
+                  },
+                  {
+                    id: "registrations",
+                    icon: <List className="w-3.5 h-3.5" />,
+                    label: "Runners",
+                  },
+                  {
+                    id: "proofs",
+                    icon: <Eye className="w-3.5 h-3.5" />,
+                    label: `Proofs${
+                      registrationsWithProof.length
+                        ? ` (${registrationsWithProof.length})`
+                        : ""
+                    }`,
+                  },
+                  {
+                    id: "scanner",
+                    icon: <Camera className="w-3.5 h-3.5" />,
+                    label: "Scanner",
+                  },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setCurrentView(tab.id)}
                   className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
                     currentView === tab.id
-                      ? 'bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white shadow-sm'
-                      : 'text-slate-600 hover:text-[#FF7A30]'
-                  }`}>
+                      ? "bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white shadow-sm"
+                      : "text-slate-600 hover:text-[#FF7A30]"
+                  }`}
+                >
                   {tab.icon}
                   <span className="truncate">{tab.label}</span>
                 </button>
@@ -522,68 +687,128 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
 
             {/* Bottom info row: DB badge + Count */}
             <div className="flex items-center justify-between text-[10px] font-mono px-1">
-              <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 border ${
-                dbSource === 'supabase' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${dbSource === 'supabase' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                <span>{dbSource === 'supabase' ? 'SUPABASE LIVE' : 'LOCAL STORE'}</span>
+              <div
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 border ${
+                  dbSource === "supabase"
+                    ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                    : "bg-amber-50 border-amber-200 text-amber-700"
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                    dbSource === "supabase" ? "bg-emerald-500" : "bg-amber-500"
+                  }`}
+                />
+                <span>
+                  {dbSource === "supabase" ? "SUPABASE LIVE" : "LOCAL STORE"}
+                </span>
               </div>
-              <span className="text-slate-400 font-semibold">{registrations.length} runners recorded</span>
+              <span className="text-slate-400 font-semibold">
+                {registrations.length} runners recorded
+              </span>
             </div>
           </div>
 
           {/* ─── Desktop Header (hidden sm:flex) ─── */}
           <div className="hidden sm:flex items-center justify-between gap-3">
             <div className="flex items-center gap-4">
-              <button onClick={onBackToHome}
-                className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3.5 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition-all">
-                <ArrowLeft className="w-4 h-4" /><span>Back to Site</span>
+              <button
+                onClick={onBackToHome}
+                className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3.5 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition-all"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Site</span>
               </button>
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-md bg-gradient-to-tr from-[#FF7A30] to-[#FFB347] flex items-center justify-center shadow-md">
                   <ShieldCheck className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="font-thunder font-black text-2xl sm:text-3xl tracking-wider leading-none text-[#0A0A0A]">ADMIN DASHBOARD</h1>
-                  <p className="text-[11px] font-mono text-slate-500 tracking-wider uppercase">Udupipages Beach Run 2026</p>
+                  <h1 className="font-thunder font-black text-2xl sm:text-3xl tracking-wider leading-none text-[#0A0A0A]">
+                    ADMIN DASHBOARD
+                  </h1>
+                  <p className="text-[11px] font-mono text-slate-500 tracking-wider uppercase">
+                    Udupipages Beach Run 2027
+                  </p>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-3 flex-wrap justify-end">
               {/* DB badge */}
-              <div className={`px-3 py-1.5 rounded-full text-xs font-mono font-bold flex items-center gap-2 border ${
-                dbSource === 'supabase' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'
-              }`}>
-                <span className={`w-2 h-2 rounded-full animate-pulse ${dbSource === 'supabase' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                <span>{dbSource === 'supabase' ? 'SUPABASE LIVE' : 'LOCAL STORE'}</span>
+              <div
+                className={`px-3 py-1.5 rounded-full text-xs font-mono font-bold flex items-center gap-2 border ${
+                  dbSource === "supabase"
+                    ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                    : "bg-amber-50 border-amber-200 text-amber-700"
+                }`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full animate-pulse ${
+                    dbSource === "supabase" ? "bg-emerald-500" : "bg-amber-500"
+                  }`}
+                />
+                <span>
+                  {dbSource === "supabase" ? "SUPABASE LIVE" : "LOCAL STORE"}
+                </span>
               </div>
 
               {/* Nav tabs */}
-              {([
-                { id: 'dashboard', icon: <LayoutDashboard className="w-3.5 h-3.5" />, label: 'Dashboard' },
-                { id: 'registrations', icon: <List className="w-3.5 h-3.5" />, label: 'Runners' },
-                { id: 'proofs', icon: <Eye className="w-3.5 h-3.5" />, label: `Proofs (${registrationsWithProof.length})` },
-                { id: 'scanner', icon: <Camera className="w-3.5 h-3.5" />, label: 'Scanner' }
-              ] as const).map(tab => (
-                <button key={tab.id} onClick={() => setCurrentView(tab.id)}
+              {(
+                [
+                  {
+                    id: "dashboard",
+                    icon: <LayoutDashboard className="w-3.5 h-3.5" />,
+                    label: "Dashboard",
+                  },
+                  {
+                    id: "registrations",
+                    icon: <List className="w-3.5 h-3.5" />,
+                    label: "Runners",
+                  },
+                  {
+                    id: "proofs",
+                    icon: <Eye className="w-3.5 h-3.5" />,
+                    label: `Proofs (${registrationsWithProof.length})`,
+                  },
+                  {
+                    id: "scanner",
+                    icon: <Camera className="w-3.5 h-3.5" />,
+                    label: "Scanner",
+                  },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setCurrentView(tab.id)}
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-all border ${
                     currentView === tab.id
-                      ? 'bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white border-transparent shadow-sm'
-                      : 'bg-slate-100 border-slate-200 text-slate-700 hover:border-[#FF7A30] hover:text-[#FF7A30]'
-                  }`}>
-                  {tab.icon}<span>{tab.label}</span>
+                      ? "bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white border-transparent shadow-sm"
+                      : "bg-slate-100 border-slate-200 text-slate-700 hover:border-[#FF7A30] hover:text-[#FF7A30]"
+                  }`}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
                 </button>
               ))}
 
-              <button onClick={fetchRegistrations} disabled={loading}
-                className="p-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 rounded-md disabled:opacity-50" title="Refresh data">
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <button
+                onClick={fetchRegistrations}
+                disabled={loading}
+                className="p-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 rounded-md disabled:opacity-50"
+                title="Refresh data"
+              >
+                <RefreshCw
+                  className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+                />
               </button>
 
-              <button onClick={handleLogout}
-                className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider">
-                <LogOut className="w-3.5 h-3.5" /><span>Log Out</span>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Log Out</span>
               </button>
             </div>
           </div>
@@ -592,10 +817,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
 
       {/* Action feedback */}
       {actionMsg && (
-        <div className={`fixed top-20 right-4 z-50 px-4 py-3 rounded-lg text-sm font-semibold shadow-lg flex items-center gap-2 ${
-          actionMsg.type === 'ok' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
-        }`}>
-          {actionMsg.type === 'ok' ? <CheckCircle2 className="w-4 h-4" /> : <X className="w-4 h-4" />}
+        <div
+          className={`fixed top-20 right-4 z-50 px-4 py-3 rounded-lg text-sm font-semibold shadow-lg flex items-center gap-2 ${
+            actionMsg.type === "ok"
+              ? "bg-emerald-600 text-white"
+              : "bg-red-600 text-white"
+          }`}
+        >
+          {actionMsg.type === "ok" ? (
+            <CheckCircle2 className="w-4 h-4" />
+          ) : (
+            <X className="w-4 h-4" />
+          )}
           {actionMsg.text}
         </div>
       )}
@@ -612,24 +845,65 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
         )}
 
         {/* ─── Dashboard View ──────────────────────────────────────────────── */}
-        {currentView === 'dashboard' && (
+        {currentView === "dashboard" && (
           <>
             {/* KPI Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               {[
-                { label: 'Total Registered', value: stats?.totalRegistrations ?? registrations.length, color: 'text-[#0A0A0A]', icon: <Users className="w-5 h-5 text-[#FF7A30]" /> },
-                { label: 'Revenue Collected', value: `₹${(stats?.totalRevenueINR ?? 0).toLocaleString('en-IN')}`, color: 'text-[#FF7A30]', icon: <IndianRupee className="w-5 h-5 text-emerald-600" /> },
-                { label: 'Paid Runners', value: stats?.totalPaidCount ?? 0, color: 'text-emerald-600', icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" /> },
-                { label: 'Pending', value: stats?.totalPendingCount ?? 0, color: 'text-amber-600', icon: <Clock className="w-5 h-5 text-amber-500" /> },
-                { label: 'Checked In', value: stats?.checkedInCount ?? 0, color: 'text-blue-600', icon: <UserCheck className="w-5 h-5 text-blue-500" />, spanMobile: true }
+                {
+                  label: "Total Registered",
+                  value: stats?.totalRegistrations ?? registrations.length,
+                  color: "text-[#0A0A0A]",
+                  icon: <Users className="w-5 h-5 text-[#FF7A30]" />,
+                },
+                {
+                  label: "Revenue Collected",
+                  value: `₹${(stats?.totalRevenueINR ?? 0).toLocaleString(
+                    "en-IN"
+                  )}`,
+                  color: "text-[#FF7A30]",
+                  icon: <IndianRupee className="w-5 h-5 text-emerald-600" />,
+                },
+                {
+                  label: "Paid Runners",
+                  value: stats?.totalPaidCount ?? 0,
+                  color: "text-emerald-600",
+                  icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,
+                },
+                {
+                  label: "Pending",
+                  value: stats?.totalPendingCount ?? 0,
+                  color: "text-amber-600",
+                  icon: <Clock className="w-5 h-5 text-amber-500" />,
+                },
+                {
+                  label: "Checked In",
+                  value: stats?.checkedInCount ?? 0,
+                  color: "text-blue-600",
+                  icon: <UserCheck className="w-5 h-5 text-blue-500" />,
+                  spanMobile: true,
+                },
               ].map(({ label, value, color, icon, spanMobile }) => (
-                <div key={label} className={`bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-sm hover:shadow-md transition-all ${spanMobile ? 'col-span-2 sm:col-span-1' : ''}`}>
+                <div
+                  key={label}
+                  className={`bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-sm hover:shadow-md transition-all ${
+                    spanMobile ? "col-span-2 sm:col-span-1" : ""
+                  }`}
+                >
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-[11px] sm:text-xs font-mono uppercase tracking-wider text-slate-500">{label}</p>
-                      <h3 className={`font-thunder text-3xl sm:text-4xl font-black mt-1 ${color}`}>{value}</h3>
+                      <p className="text-[11px] sm:text-xs font-mono uppercase tracking-wider text-slate-500">
+                        {label}
+                      </p>
+                      <h3
+                        className={`font-thunder text-3xl sm:text-4xl font-black mt-1 ${color}`}
+                      >
+                        {value}
+                      </h3>
                     </div>
-                    <div className="p-2 sm:p-2.5 bg-slate-100 rounded-lg">{icon}</div>
+                    <div className="p-2 sm:p-2.5 bg-slate-100 rounded-lg">
+                      {icon}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -638,15 +912,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
             {/* Category Breakdown */}
             {stats?.categoryStats && (
               <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-                <h4 className="text-xs font-mono uppercase tracking-wider text-slate-500 mb-4">Category Breakdown</h4>
+                <h4 className="text-xs font-mono uppercase tracking-wider text-slate-500 mb-4">
+                  Category Breakdown
+                </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {Object.entries(stats.categoryStats).map(([id, cat]) => (
-                    <div key={id} className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                      <p className="text-xs font-bold text-slate-800">{cat.name}</p>
-                      <p className="font-thunder text-2xl text-[#FF7A30] font-black mt-1">{cat.count}</p>
-                      <p className="text-[11px] text-slate-500 font-mono">₹{cat.revenue.toLocaleString('en-IN')}</p>
+                    <div
+                      key={id}
+                      className="bg-slate-50 border border-slate-200 rounded-lg p-3"
+                    >
+                      <p className="text-xs font-bold text-slate-800">
+                        {cat.name}
+                      </p>
+                      <p className="font-thunder text-2xl text-[#FF7A30] font-black mt-1">
+                        {cat.count}
+                      </p>
+                      <p className="text-[11px] text-slate-500 font-mono">
+                        ₹{cat.revenue.toLocaleString("en-IN")}
+                      </p>
                       {cat.checkedIn !== undefined && (
-                        <p className="text-[11px] text-emerald-600 mt-0.5">{cat.checkedIn} checked in</p>
+                        <p className="text-[11px] text-emerald-600 mt-0.5">
+                          {cat.checkedIn} checked in
+                        </p>
                       )}
                     </div>
                   ))}
@@ -656,54 +943,86 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
 
             {/* Quick actions */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <button onClick={() => setCurrentView('proofs')}
-                className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-[#FF7A30]/30 rounded-xl p-6 text-left hover:border-[#FF7A30] transition-all group shadow-sm bg-white">
+              <button
+                onClick={() => setCurrentView("proofs")}
+                className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-[#FF7A30]/30 rounded-xl p-6 text-left hover:border-[#FF7A30] transition-all group shadow-sm bg-white"
+              >
                 <Eye className="w-8 h-8 text-[#FF7A30] mb-3" />
-                <h3 className="font-thunder text-2xl font-black uppercase text-[#0A0A0A]">Payment Proofs ({registrationsWithProof.length})</h3>
-                <p className="text-slate-500 text-xs mt-1">Review uploaded UPI & payment screenshots →</p>
+                <h3 className="font-thunder text-2xl font-black uppercase text-[#0A0A0A]">
+                  Payment Proofs ({registrationsWithProof.length})
+                </h3>
+                <p className="text-slate-500 text-xs mt-1">
+                  Review uploaded UPI & payment screenshots →
+                </p>
               </button>
-              <button onClick={() => setCurrentView('scanner')}
-                className="bg-gradient-to-br from-[#060B14] to-[#0F1929] text-white border border-[#FF7A30]/20 rounded-xl p-6 text-left hover:border-[#FF7A30]/60 transition-all group">
+              <button
+                onClick={() => setCurrentView("scanner")}
+                className="bg-gradient-to-br from-[#060B14] to-[#0F1929] text-white border border-[#FF7A30]/20 rounded-xl p-6 text-left hover:border-[#FF7A30]/60 transition-all group"
+              >
                 <Camera className="w-8 h-8 text-[#FF7A30] mb-3" />
-                <h3 className="font-thunder text-2xl font-black uppercase">Gate Scanner</h3>
-                <p className="text-slate-400 text-xs mt-1">Open QR scanner for race-day check-in →</p>
+                <h3 className="font-thunder text-2xl font-black uppercase">
+                  Gate Scanner
+                </h3>
+                <p className="text-slate-400 text-xs mt-1">
+                  Open QR scanner for race-day check-in →
+                </p>
               </button>
-              <button onClick={exportCSV}
-                className="bg-white border border-slate-200 rounded-xl p-6 text-left hover:border-[#FF7A30] transition-all shadow-sm">
+              <button
+                onClick={exportCSV}
+                className="bg-white border border-slate-200 rounded-xl p-6 text-left hover:border-[#FF7A30] transition-all shadow-sm"
+              >
                 <Download className="w-8 h-8 text-[#FF7A30] mb-3" />
-                <h3 className="font-thunder text-2xl font-black uppercase text-[#0A0A0A]">Export CSV</h3>
-                <p className="text-slate-500 text-xs mt-1">Download all runner data as CSV →</p>
+                <h3 className="font-thunder text-2xl font-black uppercase text-[#0A0A0A]">
+                  Export CSV
+                </h3>
+                <p className="text-slate-500 text-xs mt-1">
+                  Download all runner data as CSV →
+                </p>
               </button>
             </div>
           </>
         )}
 
         {/* ─── Proofs Gallery View ───────────────────────────────────────── */}
-        {currentView === 'proofs' && (
+        {currentView === "proofs" && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
               <div>
-                <h2 className="font-thunder text-3xl font-black text-[#0A0A0A] uppercase">Payment Proofs & Receipts Gallery</h2>
+                <h2 className="font-thunder text-3xl font-black text-[#0A0A0A] uppercase">
+                  Payment Proofs & Receipts Gallery
+                </h2>
                 <p className="text-xs text-slate-500 font-mono">
-                  Showing {registrationsWithProof.length} runners with uploaded transaction receipts
+                  Showing {registrationsWithProof.length} runners with uploaded
+                  transaction receipts
                 </p>
               </div>
-              <button onClick={() => setCurrentView('registrations')}
-                className="flex items-center gap-1.5 text-xs font-bold uppercase text-[#FF7A30] hover:underline">
-                <List className="w-4 h-4" /><span>View Full Table</span>
+              <button
+                onClick={() => setCurrentView("registrations")}
+                className="flex items-center gap-1.5 text-xs font-bold uppercase text-[#FF7A30] hover:underline"
+              >
+                <List className="w-4 h-4" />
+                <span>View Full Table</span>
               </button>
             </div>
 
             {registrationsWithProof.length === 0 ? (
               <div className="bg-white rounded-xl border border-slate-200 p-16 text-center space-y-3 shadow-sm">
                 <Eye className="w-12 h-12 text-slate-300 mx-auto" />
-                <p className="text-base font-bold text-slate-700">No payment screenshots uploaded yet</p>
-                <p className="text-xs text-slate-500">Runners can upload screenshots during registration or you can attach them from the Runners table.</p>
+                <p className="text-base font-bold text-slate-700">
+                  No payment screenshots uploaded yet
+                </p>
+                <p className="text-xs text-slate-500">
+                  Runners can upload screenshots during registration or you can
+                  attach them from the Runners table.
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {registrationsWithProof.map(reg => (
-                  <div key={reg.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                {registrationsWithProof.map((reg) => (
+                  <div
+                    key={reg.id}
+                    className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                  >
                     <div>
                       {/* Image Preview Header */}
                       <div
@@ -721,9 +1040,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                             <span>View Full Size</span>
                           </span>
                         </div>
-                        <span className={`absolute top-3 right-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                          reg.paymentStatus === 'PAID' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'
-                        }`}>
+                        <span
+                          className={`absolute top-3 right-3 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                            reg.paymentStatus === "PAID"
+                              ? "bg-emerald-500 text-white"
+                              : "bg-amber-500 text-white"
+                          }`}
+                        >
                           {reg.paymentStatus}
                         </span>
                       </div>
@@ -732,26 +1055,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                       <div className="p-4 space-y-2">
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="font-bold text-slate-900 text-sm">{reg.fullName}</p>
-                            <p className="text-slate-500 text-xs">{reg.email}</p>
+                            <p className="font-bold text-slate-900 text-sm">
+                              {reg.fullName}
+                            </p>
+                            <p className="text-slate-500 text-xs">
+                              {reg.email}
+                            </p>
                           </div>
                           <span className="font-thunder text-lg text-[#FF7A30] font-black">
-                            #{reg.bibNumber || '—'}
+                            #{reg.bibNumber || "—"}
                           </span>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-50 p-2.5 rounded-lg font-mono">
                           <div>
-                            <span className="text-slate-400 block text-[9px]">CATEGORY</span>
-                            <span className="font-bold text-slate-800">{reg.categoryName}</span>
+                            <span className="text-slate-400 block text-[9px]">
+                              CATEGORY
+                            </span>
+                            <span className="font-bold text-slate-800">
+                              {reg.categoryName}
+                            </span>
                           </div>
                           <div>
-                            <span className="text-slate-400 block text-[9px]">AMOUNT</span>
-                            <span className="font-bold text-[#FF7A30]">₹{reg.amountINR}</span>
+                            <span className="text-slate-400 block text-[9px]">
+                              AMOUNT
+                            </span>
+                            <span className="font-bold text-[#FF7A30]">
+                              ₹{reg.amountINR}
+                            </span>
                           </div>
                           <div className="col-span-2">
-                            <span className="text-slate-400 block text-[9px]">TRANSACTION / UTR</span>
-                            <span className="font-bold text-slate-800 truncate block">{reg.transactionId || 'None'}</span>
+                            <span className="text-slate-400 block text-[9px]">
+                              TRANSACTION / UTR
+                            </span>
+                            <span className="font-bold text-slate-800 truncate block">
+                              {reg.transactionId || "None"}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -766,7 +1105,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                         <Eye className="w-3.5 h-3.5 text-[#FF7A30]" />
                         <span>Inspect</span>
                       </button>
-                      {reg.paymentStatus !== 'PAID' && (
+                      {reg.paymentStatus !== "PAID" && (
                         <button
                           onClick={() => handleApprove(reg.id)}
                           className="flex items-center gap-1 bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white text-xs font-bold px-3 py-2 rounded-lg hover:opacity-95"
@@ -798,39 +1137,79 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
         )}
 
         {/* ─── Registrations View ──────────────────────────────────────────── */}
-        {currentView === 'registrations' && (
+        {currentView === "registrations" && (
           <>
             {/* Search & filter */}
             <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="relative w-full md:w-96">
                   <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input type="text" placeholder="Search name, email, phone, ticket ID, transaction ID..."
-                    value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-md pl-10 pr-4 py-2.5 text-xs text-black placeholder:text-slate-400 focus:outline-none focus:border-[#FF7A30]" />
+                  <input
+                    type="text"
+                    placeholder="Search name, email, phone, ticket ID, transaction ID..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-md pl-10 pr-4 py-2.5 text-xs text-black placeholder:text-slate-400 focus:outline-none focus:border-[#FF7A30]"
+                  />
                 </div>
                 <div className="flex flex-wrap gap-3 items-center w-full md:w-auto">
                   {[
-                    { label: 'Status', value: statusFilter, onChange: setStatusFilter, options: [['ALL','All Statuses'],['PAID','PAID'],['PENDING','PENDING'],['FAILED','FAILED']] },
-                    { label: 'Category', value: categoryFilter, onChange: setCategoryFilter, options: [['ALL','All Categories'],['3k_fun','3K Fun Run'],['5k','5K Run'],['15k','15K Run']] }
+                    {
+                      label: "Status",
+                      value: statusFilter,
+                      onChange: setStatusFilter,
+                      options: [
+                        ["ALL", "All Statuses"],
+                        ["PAID", "PAID"],
+                        ["PENDING", "PENDING"],
+                        ["FAILED", "FAILED"],
+                      ],
+                    },
+                    {
+                      label: "Category",
+                      value: categoryFilter,
+                      onChange: setCategoryFilter,
+                      options: [
+                        ["ALL", "All Categories"],
+                        ["3k_fun", "3K Fun Run"],
+                        ["5k", "5K Run"],
+                        ["15k", "15K Run"],
+                      ],
+                    },
                   ].map(({ label, value, onChange, options }) => (
-                    <div key={label} className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-md px-3 py-1.5 text-xs">
+                    <div
+                      key={label}
+                      className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-md px-3 py-1.5 text-xs"
+                    >
                       <Filter className="w-3.5 h-3.5 text-slate-400" />
-                      <span className="text-slate-500 font-mono text-[11px] uppercase">{label}:</span>
-                      <select value={value} onChange={e => onChange(e.target.value)}
-                        className="bg-transparent text-slate-800 font-bold focus:outline-none cursor-pointer">
-                        {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                      <span className="text-slate-500 font-mono text-[11px] uppercase">
+                        {label}:
+                      </span>
+                      <select
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                        className="bg-transparent text-slate-800 font-bold focus:outline-none cursor-pointer"
+                      >
+                        {options.map(([v, l]) => (
+                          <option key={v} value={v}>
+                            {l}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   ))}
-                  <button onClick={exportCSV}
-                    className="flex items-center gap-2 bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white font-black px-4 py-2 rounded-md text-xs uppercase tracking-wider hover:opacity-95">
-                    <Download className="w-4 h-4" /><span>Export CSV</span>
+                  <button
+                    onClick={exportCSV}
+                    className="flex items-center gap-2 bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white font-black px-4 py-2 rounded-md text-xs uppercase tracking-wider hover:opacity-95"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Export CSV</span>
                   </button>
                 </div>
               </div>
               <div className="text-xs font-mono text-slate-500 pt-2 border-t border-slate-100">
-                Showing {filtered.length} of {registrations.length} registrations
+                Showing {filtered.length} of {registrations.length}{" "}
+                registrations
               </div>
             </div>
 
@@ -839,12 +1218,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
               {loading ? (
                 <div className="py-20 text-center flex flex-col items-center gap-3">
                   <RefreshCw className="w-8 h-8 text-[#FF7A30] animate-spin" />
-                  <p className="text-sm font-mono uppercase tracking-wider text-slate-500">Fetching registrations...</p>
+                  <p className="text-sm font-mono uppercase tracking-wider text-slate-500">
+                    Fetching registrations...
+                  </p>
                 </div>
               ) : filtered.length === 0 ? (
                 <div className="py-20 text-center space-y-2">
                   <Users className="w-10 h-10 text-slate-300 mx-auto" />
-                  <p className="text-base font-bold text-slate-700">No registrations found</p>
+                  <p className="text-base font-bold text-slate-700">
+                    No registrations found
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -864,38 +1247,75 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {filtered.map(reg => (
-                        <tr key={reg.id} className="hover:bg-slate-50/80 transition-colors">
+                      {filtered.map((reg) => (
+                        <tr
+                          key={reg.id}
+                          className="hover:bg-slate-50/80 transition-colors"
+                        >
                           <td className="py-4 px-4">
-                            <p className="font-thunder text-lg text-[#FF7A30] font-black">#{reg.bibNumber || '—'}</p>
-                            <p className="font-mono text-[11px] text-slate-500">{reg.registrationNumber}</p>
+                            <p className="font-thunder text-lg text-[#FF7A30] font-black">
+                              #{reg.bibNumber || "—"}
+                            </p>
+                            <p className="font-mono text-[11px] text-slate-500">
+                              {reg.registrationNumber}
+                            </p>
                           </td>
                           <td className="py-4 px-4">
-                            <p className="font-bold text-slate-900">{reg.fullName}</p>
-                            <p className="text-slate-500 text-[11px]">{reg.email}</p>
-                            <p className="text-slate-500 font-mono text-[11px]">{reg.phone} · {reg.age}y</p>
+                            <p className="font-bold text-slate-900">
+                              {reg.fullName}
+                            </p>
+                            <p className="text-slate-500 text-[11px]">
+                              {reg.email}
+                            </p>
+                            <p className="text-slate-500 font-mono text-[11px]">
+                              {reg.phone} · {reg.age}y
+                            </p>
                           </td>
                           <td className="py-4 px-4">
                             <span className="inline-block bg-slate-100 border border-slate-200 text-slate-800 font-semibold px-2.5 py-0.5 rounded text-[11px]">
                               {reg.categoryName}
                             </span>
-                            <p className="font-mono text-[#FF7A30] font-bold text-xs mt-1">₹{reg.amountINR}</p>
+                            <p className="font-mono text-[#FF7A30] font-bold text-xs mt-1">
+                              ₹{reg.amountINR}
+                            </p>
                           </td>
                           <td className="py-4 px-4">
-                            <div className="flex items-center gap-1.5"><Shirt className="w-3.5 h-3.5 text-slate-400" /><span className="font-bold">{reg.tshirtSize}</span></div>
+                            <div className="flex items-center gap-1.5">
+                              <Shirt className="w-3.5 h-3.5 text-slate-400" />
+                              <span className="font-bold">
+                                {reg.tshirtSize}
+                              </span>
+                            </div>
                           </td>
                           <td className="py-4 px-4 whitespace-nowrap">
-                            {reg.paymentStatus === 'PAID' && <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono"><CheckCircle2 className="w-3.5 h-3.5" />PAID</span>}
-                            {reg.paymentStatus === 'PENDING' && <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono"><Clock className="w-3.5 h-3.5" />PENDING</span>}
-                            {reg.paymentStatus === 'FAILED' && <span className="inline-flex items-center gap-1 bg-red-50 border border-red-200 text-red-700 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono">FAILED</span>}
+                            {reg.paymentStatus === "PAID" && (
+                              <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                PAID
+                              </span>
+                            )}
+                            {reg.paymentStatus === "PENDING" && (
+                              <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono">
+                                <Clock className="w-3.5 h-3.5" />
+                                PENDING
+                              </span>
+                            )}
+                            {reg.paymentStatus === "FAILED" && (
+                              <span className="inline-flex items-center gap-1 bg-red-50 border border-red-200 text-red-700 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono">
+                                FAILED
+                              </span>
+                            )}
                           </td>
                           <td className="py-4 px-4 whitespace-nowrap">
                             {reg.checkedIn ? (
                               <span className="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 px-2 py-0.5 rounded-full text-[11px] font-bold">
-                                <UserCheck className="w-3 h-3" />IN
+                                <UserCheck className="w-3 h-3" />
+                                IN
                               </span>
                             ) : (
-                              <span className="text-slate-400 text-[11px]">—</span>
+                              <span className="text-slate-400 text-[11px]">
+                                —
+                              </span>
                             )}
                           </td>
                           <td className="py-4 px-4 whitespace-nowrap">
@@ -905,7 +1325,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                                 className="flex items-center gap-2 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all hover:scale-105"
                               >
                                 <div className="w-6 h-6 rounded bg-slate-900 flex items-center justify-center overflow-hidden border border-amber-400">
-                                  <img src={reg.paymentScreenshotUrl} alt="Thumbnail" className="w-full h-full object-cover" />
+                                  <img
+                                    src={reg.paymentScreenshotUrl}
+                                    alt="Thumbnail"
+                                    className="w-full h-full object-cover"
+                                  />
                                 </div>
                                 <span className="flex items-center gap-1">
                                   <Eye className="w-3 h-3 text-[#FF7A30]" />
@@ -924,13 +1348,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                           <td className="py-4 px-4 font-mono text-[11px]">
                             {reg.razorpayPaymentId ? (
                               <div>
-                                <p className="text-emerald-700 font-bold flex items-center gap-1"><CreditCard className="w-3 h-3" />{reg.razorpayPaymentId.slice(0, 12)}...</p>
-                                {reg.emailSent && <p className="text-slate-400 text-[10px] mt-0.5">✓ Email sent</p>}
+                                <p className="text-emerald-700 font-bold flex items-center gap-1">
+                                  <CreditCard className="w-3 h-3" />
+                                  {reg.razorpayPaymentId.slice(0, 12)}...
+                                </p>
+                                {reg.emailSent && (
+                                  <p className="text-slate-400 text-[10px] mt-0.5">
+                                    ✓ Email sent
+                                  </p>
+                                )}
                               </div>
                             ) : reg.transactionId ? (
-                              <p className="text-slate-700 font-bold truncate max-w-[120px]">{reg.transactionId}</p>
+                              <p className="text-slate-700 font-bold truncate max-w-[120px]">
+                                {reg.transactionId}
+                              </p>
                             ) : reg.razorpayOrderId ? (
-                              <span className="text-amber-700">Order created</span>
+                              <span className="text-amber-700">
+                                Order created
+                              </span>
                             ) : (
                               <span className="text-slate-400">—</span>
                             )}
@@ -955,23 +1390,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                                   <span>Delete</span>
                                 </button>
                               </div>
-                              {reg.paymentStatus === 'PAID' && (
-                                <button onClick={() => handleResendEmail(reg.id)}
-                                  className="flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-800 font-semibold">
-                                  <Send className="w-3 h-3" />Resend Email
+                              {reg.paymentStatus === "PAID" && (
+                                <button
+                                  onClick={() => handleResendEmail(reg.id)}
+                                  className="flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-800 font-semibold"
+                                >
+                                  <Send className="w-3 h-3" />
+                                  Resend Email
                                 </button>
                               )}
-                              {reg.paymentStatus !== 'PAID' && (
-                                <button onClick={() => handleApprove(reg.id)}
-                                  className="flex items-center gap-1 text-[11px] text-emerald-600 hover:text-emerald-800 font-semibold">
-                                  <BadgeCheck className="w-3 h-3" />Approve
+                              {reg.paymentStatus !== "PAID" && (
+                                <button
+                                  onClick={() => handleApprove(reg.id)}
+                                  className="flex items-center gap-1 text-[11px] text-emerald-600 hover:text-emerald-800 font-semibold"
+                                >
+                                  <BadgeCheck className="w-3 h-3" />
+                                  Approve
                                 </button>
                               )}
                             </div>
                           </td>
                           <td className="py-4 px-4 font-mono text-[11px] text-slate-500 whitespace-nowrap">
-                            <div className="flex items-center gap-1"><Calendar className="w-3 h-3 text-slate-400" /><span>{new Date(reg.createdAt).toLocaleDateString()}</span></div>
-                            <div className="text-slate-400 text-[10px]">{new Date(reg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3 text-slate-400" />
+                              <span>
+                                {new Date(reg.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="text-slate-400 text-[10px]">
+                              {new Date(reg.createdAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -994,14 +1445,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                   RUNNER PAYMENT PROOF / SCREENSHOT
                 </span>
                 <h3 className="font-thunder text-2xl font-black text-[#0A0A0A]">
-                  {selectedScreenshotReg.fullName} (#{selectedScreenshotReg.bibNumber || selectedScreenshotReg.registrationNumber})
+                  {selectedScreenshotReg.fullName} (#
+                  {selectedScreenshotReg.bibNumber ||
+                    selectedScreenshotReg.registrationNumber}
+                  )
                 </h3>
               </div>
               <button
                 onClick={() => {
                   setSelectedScreenshotReg(null);
                   setModalUploadFile(null);
-                  setModalUploadTxId('');
+                  setModalUploadTxId("");
                 }}
                 className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
               >
@@ -1012,19 +1466,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-3 rounded-lg text-xs font-mono">
               <div>
                 <p className="text-slate-400 text-[10px]">CATEGORY</p>
-                <p className="font-bold text-slate-800">{selectedScreenshotReg.categoryName}</p>
+                <p className="font-bold text-slate-800">
+                  {selectedScreenshotReg.categoryName}
+                </p>
               </div>
               <div>
                 <p className="text-slate-400 text-[10px]">AMOUNT</p>
-                <p className="font-bold text-[#FF7A30]">₹{selectedScreenshotReg.amountINR}</p>
+                <p className="font-bold text-[#FF7A30]">
+                  ₹{selectedScreenshotReg.amountINR}
+                </p>
               </div>
               <div>
                 <p className="text-slate-400 text-[10px]">STATUS</p>
-                <p className="font-bold text-slate-800">{selectedScreenshotReg.paymentStatus}</p>
+                <p className="font-bold text-slate-800">
+                  {selectedScreenshotReg.paymentStatus}
+                </p>
               </div>
               <div>
                 <p className="text-slate-400 text-[10px]">TRANSACTION / UTR</p>
-                <p className="font-bold text-slate-800 truncate">{selectedScreenshotReg.transactionId || 'None specified'}</p>
+                <p className="font-bold text-slate-800 truncate">
+                  {selectedScreenshotReg.transactionId || "None specified"}
+                </p>
               </div>
             </div>
 
@@ -1040,22 +1502,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
             ) : (
               <div className="bg-slate-100 rounded-xl p-8 text-center text-slate-500 border border-dashed border-slate-300">
                 <Eye className="w-8 h-8 mx-auto text-slate-400 mb-2" />
-                <p className="text-xs font-bold text-slate-700">No Screenshot Attached Yet</p>
-                <p className="text-[11px] text-slate-400 mt-1">Attach a payment receipt or proof below</p>
+                <p className="text-xs font-bold text-slate-700">
+                  No Screenshot Attached Yet
+                </p>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Attach a payment receipt or proof below
+                </p>
               </div>
             )}
 
             {/* Upload or Replace Screenshot Box */}
             <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 space-y-3">
               <p className="text-xs font-bold text-amber-900 font-mono uppercase">
-                {selectedScreenshotReg.paymentScreenshotUrl ? 'Replace / Upload New Screenshot' : 'Upload Payment Screenshot'}
+                {selectedScreenshotReg.paymentScreenshotUrl
+                  ? "Replace / Upload New Screenshot"
+                  : "Upload Payment Screenshot"}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <input
                   type="text"
                   placeholder="Transaction / UTR ID (e.g. 432901928311)"
                   value={modalUploadTxId}
-                  onChange={e => setModalUploadTxId(e.target.value)}
+                  onChange={(e) => setModalUploadTxId(e.target.value)}
                   className="bg-white border border-amber-300 rounded px-3 py-1.5 text-xs text-black placeholder:text-slate-400 focus:outline-none focus:border-[#FF7A30]"
                 />
                 <label className="cursor-pointer">
@@ -1063,10 +1531,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/svg+xml"
                     className="hidden"
-                    onChange={e => setModalUploadFile(e.target.files?.[0] || null)}
+                    onChange={(e) =>
+                      setModalUploadFile(e.target.files?.[0] || null)
+                    }
                   />
                   <div className="border border-dashed border-amber-400 bg-white text-slate-600 text-xs px-3 py-1.5 rounded text-center truncate hover:border-[#FF7A30]">
-                    {modalUploadFile ? modalUploadFile.name : '+ Select file (PNG, JPG, WebP)'}
+                    {modalUploadFile
+                      ? modalUploadFile.name
+                      : "+ Select file (PNG, JPG, WebP)"}
                   </div>
                 </label>
               </div>
@@ -1076,7 +1548,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                   disabled={modalUploading}
                   className="w-full py-2 bg-gradient-to-r from-[#FF7A30] to-[#FFB347] text-white text-xs font-bold uppercase rounded hover:opacity-95 shadow transition-all disabled:opacity-60"
                 >
-                  {modalUploading ? 'Uploading Screenshot...' : 'Save & Attach Screenshot to Runner'}
+                  {modalUploading
+                    ? "Uploading Screenshot..."
+                    : "Save & Attach Screenshot to Runner"}
                 </button>
               )}
             </div>
@@ -1092,10 +1566,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                 >
                   <span>Open image in full tab ↗</span>
                 </a>
-              ) : <div />}
+              ) : (
+                <div />
+              )}
 
               <div className="flex items-center gap-2">
-                {selectedScreenshotReg.paymentStatus !== 'PAID' && (
+                {selectedScreenshotReg.paymentStatus !== "PAID" && (
                   <button
                     onClick={() => {
                       handleApprove(selectedScreenshotReg.id);
@@ -1111,7 +1587,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                   onClick={() => {
                     setSelectedScreenshotReg(null);
                     setModalUploadFile(null);
-                    setModalUploadTxId('');
+                    setModalUploadTxId("");
                   }}
                   className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold uppercase px-4 py-2 rounded-lg"
                 >
@@ -1133,8 +1609,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
                   <Pencil className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-thunder font-black text-2xl text-slate-900 leading-none">EDIT RUNNER</h3>
-                  <p className="font-mono text-xs text-slate-500 mt-0.5">{editingReg.registrationNumber} {editingReg.bibNumber ? `• Bib #${editingReg.bibNumber}` : ''}</p>
+                  <h3 className="font-thunder font-black text-2xl text-slate-900 leading-none">
+                    EDIT RUNNER
+                  </h3>
+                  <p className="font-mono text-xs text-slate-500 mt-0.5">
+                    {editingReg.registrationNumber}{" "}
+                    {editingReg.bibNumber
+                      ? `• Bib #${editingReg.bibNumber}`
+                      : ""}
+                  </p>
                 </div>
               </div>
               <button
@@ -1146,67 +1629,97 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
             </div>
 
             {/* Edit Form */}
-            <form onSubmit={handleSaveEdit} className="space-y-4 text-xs font-sans">
+            <form
+              onSubmit={handleSaveEdit}
+              className="space-y-4 text-xs font-sans"
+            >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {/* Full Name */}
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Runner Full Name *</label>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                    Runner Full Name *
+                  </label>
                   <input
                     type="text"
                     required
                     value={editForm.fullName}
-                    onChange={e => setEditForm(prev => ({ ...prev, fullName: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        fullName: e.target.value,
+                      }))
+                    }
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                   />
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Email Address *</label>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                    Email Address *
+                  </label>
                   <input
                     type="email"
                     required
                     value={editForm.email}
-                    onChange={e => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
+                    }
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                   />
                 </div>
 
                 {/* Phone */}
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Phone Number *</label>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                    Phone Number *
+                  </label>
                   <input
                     type="tel"
                     required
                     value={editForm.phone}
-                    onChange={e => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        phone: e.target.value,
+                      }))
+                    }
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                   />
                 </div>
 
                 {/* Age */}
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Age *</label>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                    Age *
+                  </label>
                   <input
                     type="number"
                     min="1"
                     max="110"
                     required
                     value={editForm.age}
-                    onChange={e => setEditForm(prev => ({ ...prev, age: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({ ...prev, age: e.target.value }))
+                    }
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                   />
                 </div>
 
                 {/* Race Category */}
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Race Category *</label>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                    Race Category *
+                  </label>
                   <select
                     value={editForm.categoryId}
-                    onChange={e => handleCategoryChangeInEdit(e.target.value)}
+                    onChange={(e) => handleCategoryChangeInEdit(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                   >
-                    {AVAILABLE_CATEGORIES.map(c => (
+                    {AVAILABLE_CATEGORIES.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name} (₹{c.price})
                       </option>
@@ -1216,36 +1729,59 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
 
                 {/* T-Shirt Size */}
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">T-Shirt Size</label>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                    T-Shirt Size
+                  </label>
                   <select
                     value={editForm.tshirtSize}
-                    onChange={e => setEditForm(prev => ({ ...prev, tshirtSize: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        tshirtSize: e.target.value,
+                      }))
+                    }
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                   >
-                    {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => (
-                      <option key={s} value={s}>{s}</option>
+                    {["XS", "S", "M", "L", "XL", "XXL"].map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 {/* Bib Number */}
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Bib Number</label>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                    Bib Number
+                  </label>
                   <input
                     type="number"
                     placeholder="e.g. 2004"
                     value={editForm.bibNumber}
-                    onChange={e => setEditForm(prev => ({ ...prev, bibNumber: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        bibNumber: e.target.value,
+                      }))
+                    }
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                   />
                 </div>
 
                 {/* Payment Status */}
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Payment Status</label>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                    Payment Status
+                  </label>
                   <select
                     value={editForm.paymentStatus}
-                    onChange={e => setEditForm(prev => ({ ...prev, paymentStatus: e.target.value as any }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        paymentStatus: e.target.value as any,
+                      }))
+                    }
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                   >
                     <option value="PAID">PAID</option>
@@ -1257,22 +1793,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
 
                 {/* Amount Paid */}
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Amount (₹)</label>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                    Amount (₹)
+                  </label>
                   <input
                     type="number"
                     min="0"
                     value={editForm.amountINR}
-                    onChange={e => setEditForm(prev => ({ ...prev, amountINR: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        amountINR: e.target.value,
+                      }))
+                    }
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                   />
                 </div>
 
                 {/* Check-In Status */}
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Race Day Check-In</label>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                    Race Day Check-In
+                  </label>
                   <select
-                    value={editForm.checkedIn ? 'YES' : 'NO'}
-                    onChange={e => setEditForm(prev => ({ ...prev, checkedIn: e.target.value === 'YES' }))}
+                    value={editForm.checkedIn ? "YES" : "NO"}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        checkedIn: e.target.value === "YES",
+                      }))
+                    }
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                   >
                     <option value="NO">Not Checked In</option>
@@ -1282,22 +1832,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
 
                 {/* Emergency Contact Name */}
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Emergency Contact Name</label>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                    Emergency Contact Name
+                  </label>
                   <input
                     type="text"
                     value={editForm.emergencyContactName}
-                    onChange={e => setEditForm(prev => ({ ...prev, emergencyContactName: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        emergencyContactName: e.target.value,
+                      }))
+                    }
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                   />
                 </div>
 
                 {/* Emergency Contact Phone */}
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Emergency Contact Phone</label>
+                  <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                    Emergency Contact Phone
+                  </label>
                   <input
                     type="tel"
                     value={editForm.emergencyContactPhone}
-                    onChange={e => setEditForm(prev => ({ ...prev, emergencyContactPhone: e.target.value }))}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        emergencyContactPhone: e.target.value,
+                      }))
+                    }
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-semibold focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                   />
                 </div>
@@ -1305,12 +1869,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
 
               {/* Admin Note */}
               <div>
-                <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">Admin Remarks / Note</label>
+                <label className="block text-slate-700 font-bold mb-1 font-mono uppercase tracking-wider text-[11px]">
+                  Admin Remarks / Note
+                </label>
                 <textarea
                   rows={2}
                   placeholder="Optional internal remarks about this registration..."
                   value={editForm.adminNote}
-                  onChange={e => setEditForm(prev => ({ ...prev, adminNote: e.target.value }))}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      adminNote: e.target.value,
+                    }))
+                  }
                   className="w-full bg-slate-50 border border-slate-300 rounded-lg p-3 text-slate-900 text-xs focus:outline-none focus:border-[#FF7A30] focus:ring-1 focus:ring-[#FF7A30]"
                 />
               </div>
@@ -1353,33 +1924,49 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onBackToHome }) 
             </div>
 
             <div className="text-center space-y-1">
-              <h3 className="font-thunder font-black text-2xl text-slate-900">DELETE REGISTRATION?</h3>
+              <h3 className="font-thunder font-black text-2xl text-slate-900">
+                DELETE REGISTRATION?
+              </h3>
               <p className="text-xs text-slate-500">
-                Are you sure you want to delete runner <strong className="text-slate-800">{deletingReg.fullName}</strong>?
+                Are you sure you want to delete runner{" "}
+                <strong className="text-slate-800">
+                  {deletingReg.fullName}
+                </strong>
+                ?
               </p>
             </div>
 
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-1 font-mono">
               <div className="flex justify-between">
                 <span className="text-slate-400">Reg #:</span>
-                <span className="font-bold text-slate-800">{deletingReg.registrationNumber}</span>
+                <span className="font-bold text-slate-800">
+                  {deletingReg.registrationNumber}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Category:</span>
-                <span className="font-bold text-slate-800">{deletingReg.categoryName}</span>
+                <span className="font-bold text-slate-800">
+                  {deletingReg.categoryName}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Email:</span>
-                <span className="font-bold text-slate-800">{deletingReg.email}</span>
+                <span className="font-bold text-slate-800">
+                  {deletingReg.email}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Bib Number:</span>
-                <span className="font-bold text-[#FF7A30]">#{deletingReg.bibNumber || 'None'}</span>
+                <span className="font-bold text-[#FF7A30]">
+                  #{deletingReg.bibNumber || "None"}
+                </span>
               </div>
             </div>
 
             <p className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg p-2.5 leading-relaxed">
-              ⚠️ <strong>Warning:</strong> This permanently deletes this runner, their ticket, and any check-in audit records from the database. This action cannot be undone.
+              ⚠️ <strong>Warning:</strong> This permanently deletes this runner,
+              their ticket, and any check-in audit records from the database.
+              This action cannot be undone.
             </p>
 
             <div className="flex items-center gap-3 pt-2">

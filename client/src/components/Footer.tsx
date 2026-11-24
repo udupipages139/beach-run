@@ -1,13 +1,11 @@
-import React from 'react';
-import { Waves, Mail, Phone, MapPin, ExternalLink, Heart } from 'lucide-react';
+import React from "react";
+import { Waves, Mail, Phone, MapPin, ExternalLink, Heart } from "lucide-react";
 
 export const Footer: React.FC = () => {
   return (
     <footer className="bg-slate-900 border-t border-slate-800 text-slate-200 pt-12 sm:pt-16 pb-8 sm:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-12 pb-12 sm:pb-16 border-b border-slate-800">
-          
           {/* Column 1: Brand Info */}
           <div className="sm:col-span-2 lg:col-span-5 space-y-4 sm:space-y-6">
             <div className="flex items-center space-x-3">
@@ -27,7 +25,9 @@ export const Footer: React.FC = () => {
             </div>
 
             <p className="text-sm text-slate-300 font-normal leading-relaxed max-w-md">
-              An initiative by Udupipages connecting runners, environmental advocates, and local coastal communities to protect Udupi’s pristine shorelines and river estuaries.
+              An initiative by Udupipages connecting runners, environmental
+              advocates, and local coastal communities to protect Udupi’s
+              pristine shorelines and river estuaries.
             </p>
 
             <div className="pt-2">
@@ -49,13 +49,62 @@ export const Footer: React.FC = () => {
               QUICK NAVIGATION
             </h4>
             <ul className="space-y-2 text-sm text-slate-300 font-medium">
-              <li><a href="#about" className="hover:text-[#00A3FF] transition-colors">Event Purpose</a></li>
-              <li><a href="#objectives" className="hover:text-[#00A3FF] transition-colors">5 Conservation Objectives</a></li>
-              <li><a href="#details" className="hover:text-[#00A3FF] transition-colors">Race Day Specifications</a></li>
-              <li><a href="#route" className="hover:text-[#00A3FF] transition-colors">Padukere-Kapu Route Map</a></li>
-              <li><a href="#register" className="hover:text-[#00A3FF] transition-colors">Category Registration</a></li>
-              <li><a href="#news" className="hover:text-[#00A3FF] transition-colors">Blog & News</a></li>
-              <li><a href="#faq" className="hover:text-[#00A3FF] transition-colors">BIB & Hydration FAQs</a></li>
+              <li>
+                <a
+                  href="#about"
+                  className="hover:text-[#00A3FF] transition-colors"
+                >
+                  Event Purpose
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#objectives"
+                  className="hover:text-[#00A3FF] transition-colors"
+                >
+                  5 Conservation Objectives
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#details"
+                  className="hover:text-[#00A3FF] transition-colors"
+                >
+                  Race Day Specifications
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#route"
+                  className="hover:text-[#00A3FF] transition-colors"
+                >
+                  Padukere-Kapu Route Map
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#register"
+                  className="hover:text-[#00A3FF] transition-colors"
+                >
+                  Category Registration
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#news"
+                  className="hover:text-[#00A3FF] transition-colors"
+                >
+                  Blog & News
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#faq"
+                  className="hover:text-[#00A3FF] transition-colors"
+                >
+                  BIB & Hydration FAQs
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -67,35 +116,46 @@ export const Footer: React.FC = () => {
             <div className="space-y-3 text-sm text-slate-300 font-medium">
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-[#00A3FF] flex-shrink-0 mt-0.5" />
-                <span>Udupipages Media Secretariat, Car Street, Udupi, Karnataka – 576101</span>
+                <span>
+                  Udupipages Media Secretariat, Car Street, Udupi, Karnataka –
+                  576101
+                </span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-[#00A3FF] flex-shrink-0" />
-                <a href="mailto:run@udupibeachrun.com" className="hover:text-[#00A3FF] transition-colors">
+                <a
+                  href="mailto:run@udupibeachrun.com"
+                  className="hover:text-[#00A3FF] transition-colors"
+                >
                   run@udupibeachrun.com
                 </a>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-[#00A3FF] flex-shrink-0" />
-                <a href="tel:+919180323209" className="hover:text-[#00A3FF] transition-colors">
+                <a
+                  href="tel:+919180323209"
+                  className="hover:text-[#00A3FF] transition-colors"
+                >
                   +91 9180323209
                 </a>
               </div>
             </div>
           </div>
-
         </div>
 
         {/* Bottom Credits & Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 space-y-4 sm:space-y-0 font-medium">
-          <p>© 2026 Udupipages Media. All rights reserved. Udupipages Beach Run 2026.</p>
+          <p>
+            © 2026 Udupipages Media. All rights reserved. Udupipages Beach Run
+            2027.
+          </p>
           <div className="flex items-center space-x-4">
             <a
               href="/admin"
               onClick={(e) => {
                 e.preventDefault();
-                window.history.pushState({}, '', '/admin');
-                window.dispatchEvent(new Event('popstate'));
+                window.history.pushState({}, "", "/admin");
+                window.dispatchEvent(new Event("popstate"));
               }}
               className="text-slate-500 hover:text-[#00A3FF] transition-colors font-mono text-[11px] uppercase tracking-wider font-bold"
             >
@@ -107,7 +167,6 @@ export const Footer: React.FC = () => {
             </div>
           </div>
         </div>
-
       </div>
     </footer>
   );
