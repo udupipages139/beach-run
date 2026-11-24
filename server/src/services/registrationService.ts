@@ -1,12 +1,12 @@
 /**
- * RegistrationService — Udupipages Beach Run 2026
+ * RegistrationService — Udupipages Beach Run 2027
  * Full-featured service: registration CRUD, payment, ticket finalization, QR, email, check-in.
  */
-import { supabase } from '../config/supabase.js';
-import { randomUUID, randomBytes } from 'crypto';
-import QRCode from 'qrcode';
-import nodemailer from 'nodemailer';
-import { CATEGORIES } from '../config/categories.js';
+import { supabase } from "../config/supabase.js";
+import { randomUUID, randomBytes } from "crypto";
+import QRCode from "qrcode";
+import nodemailer from "nodemailer";
+import { CATEGORIES } from "../config/categories.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -23,7 +23,7 @@ export interface RegistrationRecord {
   emergencyContactName: string;
   emergencyContactPhone: string;
   experience?: string;
-  paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+  paymentStatus: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
   amountINR: number;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
@@ -43,13 +43,13 @@ export interface RegistrationRecord {
   createdAt: string;
   updatedAt: string;
   // legacy compat
-  status?: 'PENDING' | 'PAID' | 'FREE' | 'FAILED';
+  status?: "PENDING" | "PAID" | "FREE" | "FAILED";
   amountInr?: number;
 }
 
 export interface CheckInResult {
   success: boolean;
-  result: 'SUCCESS' | 'DUPLICATE' | 'INVALID' | 'UNPAID';
+  result: "SUCCESS" | "DUPLICATE" | "INVALID" | "UNPAID";
   registration?: RegistrationRecord;
   message: string;
   firstCheckedInAt?: string;
@@ -59,12 +59,19 @@ export interface CheckInResult {
 
 const inMemoryRegistrations = new Map<string, RegistrationRecord>();
 const inMemoryBibCounters: Record<string, number> = {
-  '3k_fun': 1002, '5k': 2003, '15k': 4002
+  "3k_fun": 1002,
+  "5k": 2003,
+  "15k": 4002,
 };
 const inMemoryWebhookEvents = new Set<string>();
 
 // Helper: generate realistic sample UPI payment screenshot SVG for demo records
-function createSampleUpiProof(name: string, amount: number, utr: string, category: string): string {
+function createSampleUpiProof(
+  name: string,
+  amount: number,
+  utr: string,
+  category: string
+): string {
   const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="420" height="640" viewBox="0 0 420 640" fill="none">
   <rect width="420" height="640" rx="20" fill="#0A0F1D"/>
@@ -109,8 +116,10 @@ function createSampleUpiProof(name: string, amount: number, utr: string, categor
   <!-- Card box -->
   <rect x="36" y="495" width="348" height="75" rx="10" fill="#0A0F1D" stroke="#334155"/>
   <text x="52" y="525" fill="#10B981" font-family="sans-serif" font-size="12" font-weight="bold">✓ OFFICIAL DIGITAL RECEIPT</text>
-  <text x="52" y="546" fill="#94A3B8" font-family="sans-serif" font-size="11">Udupipages Beach Run 2026 — Verified Entry</text>
-  <text x="52" y="562" fill="#64748B" font-family="monospace" font-size="10">Ref: UBR-PROOF-${utr.slice(-6)}</text>
+  <text x="52" y="546" fill="#94A3B8" font-family="sans-serif" font-size="11">Udupipages Beach Run 2027 — Verified Entry</text>
+  <text x="52" y="562" fill="#64748B" font-family="monospace" font-size="10">Ref: UBR-PROOF-${utr.slice(
+    -6
+  )}</text>
 </svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg.trim())}`;
 }
@@ -118,171 +127,201 @@ function createSampleUpiProof(name: string, amount: number, utr: string, categor
 // Pre-populate with initial test registrations
 const initialDemoRegistrations: RegistrationRecord[] = [
   {
-    id: 'demo-reg-1',
-    registrationNumber: 'UBR2026-1001',
-    fullName: 'Venkat Nayak',
-    email: 'venkat.nayak@example.com',
-    phone: '7890123456',
+    id: "demo-reg-1",
+    registrationNumber: "UBR2026-1001",
+    fullName: "Venkat Nayak",
+    email: "venkat.nayak@example.com",
+    phone: "7890123456",
     age: 42,
-    categoryId: '3k_fun',
-    categoryName: '3K Fun Run',
-    tshirtSize: 'XL',
-    emergencyContactName: 'Shanti Nayak',
-    emergencyContactPhone: '7890123457',
-    experience: '5K / 10K Completed Before',
-    paymentStatus: 'PAID',
+    categoryId: "3k_fun",
+    categoryName: "3K Fun Run",
+    tshirtSize: "XL",
+    emergencyContactName: "Shanti Nayak",
+    emergencyContactPhone: "7890123457",
+    experience: "5K / 10K Completed Before",
+    paymentStatus: "PAID",
     amountINR: 399,
-    razorpayOrderId: 'order_demo_1001',
-    razorpayPaymentId: 'pay_demo_1001',
-    transactionId: 'pay_demo_1001',
-    paymentScreenshotUrl: createSampleUpiProof('Venkat Nayak', 399, '432901928311', '3K Fun Run'),
-    ticketId: 'ticket-demo-1001',
-    qrToken: 'demo_venkat_3k_1001_qr_token_beachrun2026',
+    razorpayOrderId: "order_demo_1001",
+    razorpayPaymentId: "pay_demo_1001",
+    transactionId: "pay_demo_1001",
+    paymentScreenshotUrl: createSampleUpiProof(
+      "Venkat Nayak",
+      399,
+      "432901928311",
+      "3K Fun Run"
+    ),
+    ticketId: "ticket-demo-1001",
+    qrToken: "demo_venkat_3k_1001_qr_token_beachrun2026",
     bibNumber: 1001,
     emailSent: true,
     emailAttempts: 1,
     checkedIn: false,
     createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 5).toISOString()
+    updatedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
   },
   {
-    id: 'demo-reg-2',
-    registrationNumber: 'UBR2026-2001',
-    fullName: 'Ramesh Bhat',
-    email: 'ramesh.bhat@example.com',
-    phone: '9876543210',
+    id: "demo-reg-2",
+    registrationNumber: "UBR2026-2001",
+    fullName: "Ramesh Bhat",
+    email: "ramesh.bhat@example.com",
+    phone: "9876543210",
     age: 28,
-    categoryId: '5k',
-    categoryName: '5K Run',
-    tshirtSize: 'M',
-    emergencyContactName: 'Suma Bhat',
-    emergencyContactPhone: '9876543211',
-    experience: '5K / 10K Completed Before',
-    paymentStatus: 'PAID',
+    categoryId: "5k",
+    categoryName: "5K Run",
+    tshirtSize: "M",
+    emergencyContactName: "Suma Bhat",
+    emergencyContactPhone: "9876543211",
+    experience: "5K / 10K Completed Before",
+    paymentStatus: "PAID",
     amountINR: 599,
-    razorpayOrderId: 'order_demo_2001',
-    razorpayPaymentId: 'pay_demo_2001',
-    transactionId: 'pay_demo_2001',
-    paymentScreenshotUrl: createSampleUpiProof('Ramesh Bhat', 599, '432901928322', '5K Run'),
-    ticketId: 'ticket-demo-2001',
-    qrToken: 'demo_ramesh_5k_2001_qr_token_beachrun2026',
+    razorpayOrderId: "order_demo_2001",
+    razorpayPaymentId: "pay_demo_2001",
+    transactionId: "pay_demo_2001",
+    paymentScreenshotUrl: createSampleUpiProof(
+      "Ramesh Bhat",
+      599,
+      "432901928322",
+      "5K Run"
+    ),
+    ticketId: "ticket-demo-2001",
+    qrToken: "demo_ramesh_5k_2001_qr_token_beachrun2026",
     bibNumber: 2001,
     emailSent: true,
     emailAttempts: 1,
     checkedIn: false,
     createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 4).toISOString()
+    updatedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
   },
   {
-    id: 'demo-reg-3',
-    registrationNumber: 'UBR2026-2002',
-    fullName: 'Sneha Rao',
-    email: 'sneha.rao@example.com',
-    phone: '8123456789',
+    id: "demo-reg-3",
+    registrationNumber: "UBR2026-2002",
+    fullName: "Sneha Rao",
+    email: "sneha.rao@example.com",
+    phone: "8123456789",
     age: 19,
-    categoryId: '5k',
-    categoryName: '5K Run',
-    tshirtSize: 'XS',
-    emergencyContactName: 'Mohan Rao',
-    emergencyContactPhone: '8123456790',
-    experience: 'First Time Runner (Beginner)',
-    paymentStatus: 'PAID',
+    categoryId: "5k",
+    categoryName: "5K Run",
+    tshirtSize: "XS",
+    emergencyContactName: "Mohan Rao",
+    emergencyContactPhone: "8123456790",
+    experience: "First Time Runner (Beginner)",
+    paymentStatus: "PAID",
     amountINR: 599,
-    razorpayOrderId: 'order_demo_2002',
-    razorpayPaymentId: 'pay_demo_2002',
-    transactionId: 'pay_demo_2002',
-    paymentScreenshotUrl: createSampleUpiProof('Sneha Rao', 599, '432901928333', '5K Run'),
-    ticketId: 'ticket-demo-2002',
-    qrToken: 'demo_sneha_5k_2002_qr_token_beachrun2026',
+    razorpayOrderId: "order_demo_2002",
+    razorpayPaymentId: "pay_demo_2002",
+    transactionId: "pay_demo_2002",
+    paymentScreenshotUrl: createSampleUpiProof(
+      "Sneha Rao",
+      599,
+      "432901928333",
+      "5K Run"
+    ),
+    ticketId: "ticket-demo-2002",
+    qrToken: "demo_sneha_5k_2002_qr_token_beachrun2026",
     bibNumber: 2002,
     emailSent: true,
     emailAttempts: 1,
     checkedIn: false,
     createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 3).toISOString()
+    updatedAt: new Date(Date.now() - 3600000 * 3).toISOString(),
   },
   {
-    id: 'demo-reg-4',
-    registrationNumber: 'UBR2026-3001',
-    fullName: 'Priya Shetty',
-    email: 'priya.shetty@example.com',
-    phone: '9845021234',
+    id: "demo-reg-4",
+    registrationNumber: "UBR2026-3001",
+    fullName: "Priya Shetty",
+    email: "priya.shetty@example.com",
+    phone: "9845021234",
     age: 22,
-    categoryId: '10k',
-    categoryName: '10K Run',
-    tshirtSize: 'S',
-    emergencyContactName: 'Raju Shetty',
-    emergencyContactPhone: '9845021235',
-    experience: 'Half Marathon (21K) / 15K Completed',
-    paymentStatus: 'PAID',
+    categoryId: "10k",
+    categoryName: "10K Run",
+    tshirtSize: "S",
+    emergencyContactName: "Raju Shetty",
+    emergencyContactPhone: "9845021235",
+    experience: "Half Marathon (21K) / 15K Completed",
+    paymentStatus: "PAID",
     amountINR: 799,
-    razorpayOrderId: 'order_demo_3001',
-    razorpayPaymentId: 'pay_demo_3001',
-    transactionId: 'pay_demo_3001',
-    paymentScreenshotUrl: createSampleUpiProof('Priya Shetty', 799, '432901928344', '10K Run'),
-    ticketId: 'ticket-demo-3001',
-    qrToken: 'demo_priya_10k_3001_qr_token_beachrun2026',
+    razorpayOrderId: "order_demo_3001",
+    razorpayPaymentId: "pay_demo_3001",
+    transactionId: "pay_demo_3001",
+    paymentScreenshotUrl: createSampleUpiProof(
+      "Priya Shetty",
+      799,
+      "432901928344",
+      "10K Run"
+    ),
+    ticketId: "ticket-demo-3001",
+    qrToken: "demo_priya_10k_3001_qr_token_beachrun2026",
     bibNumber: 3001,
     emailSent: true,
     emailAttempts: 1,
     checkedIn: false,
     createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000 * 2).toISOString()
+    updatedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
   },
   {
-    id: 'demo-reg-5',
-    registrationNumber: 'UBR2026-4001',
-    fullName: 'Arjun Kamath',
-    email: 'arjun.kamath@example.com',
-    phone: '9980012345',
+    id: "demo-reg-5",
+    registrationNumber: "UBR2026-4001",
+    fullName: "Arjun Kamath",
+    email: "arjun.kamath@example.com",
+    phone: "9980012345",
     age: 35,
-    categoryId: '15k',
-    categoryName: '15K Run',
-    tshirtSize: 'L',
-    emergencyContactName: 'Deepa Kamath',
-    emergencyContactPhone: '9980012346',
-    experience: 'Full Marathon / Experienced Runner',
-    paymentStatus: 'PAID',
+    categoryId: "15k",
+    categoryName: "15K Run",
+    tshirtSize: "L",
+    emergencyContactName: "Deepa Kamath",
+    emergencyContactPhone: "9980012346",
+    experience: "Full Marathon / Experienced Runner",
+    paymentStatus: "PAID",
     amountINR: 999,
-    razorpayOrderId: 'order_demo_4001',
-    razorpayPaymentId: 'pay_demo_4001',
-    transactionId: 'pay_demo_4001',
-    paymentScreenshotUrl: createSampleUpiProof('Arjun Kamath', 999, '432901928355', '15K Run'),
-    ticketId: 'ticket-demo-4001',
-    qrToken: 'demo_arjun_15k_4001_qr_token_beachrun2026',
+    razorpayOrderId: "order_demo_4001",
+    razorpayPaymentId: "pay_demo_4001",
+    transactionId: "pay_demo_4001",
+    paymentScreenshotUrl: createSampleUpiProof(
+      "Arjun Kamath",
+      999,
+      "432901928355",
+      "15K Run"
+    ),
+    ticketId: "ticket-demo-4001",
+    qrToken: "demo_arjun_15k_4001_qr_token_beachrun2026",
     bibNumber: 4001,
     emailSent: true,
     emailAttempts: 1,
     checkedIn: false,
     createdAt: new Date(Date.now() - 3600000).toISOString(),
-    updatedAt: new Date(Date.now() - 3600000).toISOString()
+    updatedAt: new Date(Date.now() - 3600000).toISOString(),
   },
   {
-    id: 'demo-reg-6',
-    registrationNumber: 'UBR2026-3002',
-    fullName: 'Kiran D\'Souza',
-    email: 'kiran.dsouza@example.com',
-    phone: '9741234567',
+    id: "demo-reg-6",
+    registrationNumber: "UBR2026-3002",
+    fullName: "Kiran D'Souza",
+    email: "kiran.dsouza@example.com",
+    phone: "9741234567",
     age: 25,
-    categoryId: '10k',
-    categoryName: '10K Run',
-    tshirtSize: 'M',
-    emergencyContactName: 'Mary DSouza',
-    emergencyContactPhone: '9741234568',
-    experience: '5K / 10K Completed Before',
-    paymentStatus: 'PENDING',
+    categoryId: "10k",
+    categoryName: "10K Run",
+    tshirtSize: "M",
+    emergencyContactName: "Mary DSouza",
+    emergencyContactPhone: "9741234568",
+    experience: "5K / 10K Completed Before",
+    paymentStatus: "PENDING",
     amountINR: 799,
-    razorpayOrderId: 'order_demo_pending_3002',
-    paymentScreenshotUrl: createSampleUpiProof('Kiran D\'Souza', 799, '432901928366', '10K Run (Manual Transfer)'),
+    razorpayOrderId: "order_demo_pending_3002",
+    paymentScreenshotUrl: createSampleUpiProof(
+      "Kiran D'Souza",
+      799,
+      "432901928366",
+      "10K Run (Manual Transfer)"
+    ),
     emailSent: false,
     emailAttempts: 0,
     checkedIn: false,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
+    updatedAt: new Date().toISOString(),
+  },
 ];
 
-initialDemoRegistrations.forEach(r => inMemoryRegistrations.set(r.id, r));
+initialDemoRegistrations.forEach((r) => inMemoryRegistrations.set(r.id, r));
 
 // ─── Helper: map Supabase row → RegistrationRecord ───────────────────────────
 
@@ -290,17 +329,17 @@ function mapRow(d: any): RegistrationRecord {
   return {
     id: d.id,
     registrationNumber: d.registration_number || d.id,
-    fullName: d.full_name || '',
-    email: d.email || '',
-    phone: d.phone || '',
+    fullName: d.full_name || "",
+    email: d.email || "",
+    phone: d.phone || "",
     age: Number(d.age || 0),
-    categoryId: d.category_id || '',
-    categoryName: d.category_name || '',
-    tshirtSize: d.tshirt_size || 'M',
-    emergencyContactName: d.emergency_contact_name || d.emergency_contact || '',
-    emergencyContactPhone: d.emergency_contact_phone || '',
+    categoryId: d.category_id || "",
+    categoryName: d.category_name || "",
+    tshirtSize: d.tshirt_size || "M",
+    emergencyContactName: d.emergency_contact_name || d.emergency_contact || "",
+    emergencyContactPhone: d.emergency_contact_phone || "",
     experience: d.experience,
-    paymentStatus: d.payment_status || 'PENDING',
+    paymentStatus: d.payment_status || "PENDING",
     amountINR: Number(d.amount_inr || d.amount_paid || 0),
     razorpayOrderId: d.razorpay_order_id,
     razorpayPaymentId: d.razorpay_payment_id,
@@ -320,7 +359,12 @@ function mapRow(d: any): RegistrationRecord {
     createdAt: d.created_at || new Date().toISOString(),
     updatedAt: d.updated_at || new Date().toISOString(),
     // Legacy compat fields
-    status: d.payment_status === 'PAID' ? 'PAID' : d.payment_status === 'FAILED' ? 'FAILED' : 'PENDING',
+    status:
+      d.payment_status === "PAID"
+        ? "PAID"
+        : d.payment_status === "FAILED"
+        ? "FAILED"
+        : "PENDING",
     amountInr: Number(d.amount_inr || d.amount_paid || 0),
   };
 }
@@ -329,7 +373,7 @@ function mapRow(d: any): RegistrationRecord {
 
 function generateRegistrationNumber(): string {
   const digits = Math.floor(1000 + Math.random() * 9000);
-  return `UBR2026-${digits}`;
+  return `UBR2027-${digits}`;
 }
 
 // ─── Helper: assign bib number ───────────────────────────────────────────────
@@ -339,22 +383,24 @@ async function assignBibNumber(categoryId: string): Promise<number> {
     try {
       // Atomic increment using Supabase RPC or update-returning
       const { data, error } = await supabase
-        .from('bib_counters')
-        .select('next_bib')
-        .eq('category_id', categoryId)
+        .from("bib_counters")
+        .select("next_bib")
+        .eq("category_id", categoryId)
         .single();
 
       if (!error && data) {
         const bib = data.next_bib;
         await supabase
-          .from('bib_counters')
+          .from("bib_counters")
           .update({ next_bib: bib + 1 })
-          .eq('category_id', categoryId)
-          .eq('next_bib', bib); // optimistic lock
+          .eq("category_id", categoryId)
+          .eq("next_bib", bib); // optimistic lock
         return bib;
       }
     } catch (e) {
-      console.warn('[RegistrationService] Bib counter Supabase error, using in-memory');
+      console.warn(
+        "[RegistrationService] Bib counter Supabase error, using in-memory"
+      );
     }
   }
   const current = inMemoryBibCounters[categoryId] ?? 5001;
@@ -367,10 +413,10 @@ async function assignBibNumber(categoryId: string): Promise<number> {
 export async function generateQRBuffer(qrToken: string): Promise<Buffer> {
   const content = `BR26.${qrToken}`;
   const buf = await QRCode.toBuffer(content, {
-    errorCorrectionLevel: 'Q',
+    errorCorrectionLevel: "Q",
     width: 400,
     margin: 2,
-    color: { dark: '#0A0A0A', light: '#FFFFFF' }
+    color: { dark: "#0A0A0A", light: "#FFFFFF" },
   });
   return buf;
 }
@@ -387,11 +433,11 @@ function createTransporter() {
     !host ||
     !user ||
     !pass ||
-    user.includes('your-email') ||
-    user.includes('example.com') ||
-    user.includes('placeholder') ||
-    pass.includes('your-16-char') ||
-    pass.includes('placeholder')
+    user.includes("your-email") ||
+    user.includes("example.com") ||
+    user.includes("placeholder") ||
+    pass.includes("your-16-char") ||
+    pass.includes("placeholder")
   ) {
     return null;
   }
@@ -400,17 +446,22 @@ function createTransporter() {
     host,
     port,
     secure: port === 465,
-    auth: { user, pass }
+    auth: { user, pass },
   });
 }
 
 const categoryFlagTimes: Record<string, string> = {
-  '3k_fun': '7:00 AM', '5k': '6:30 AM', '15k': '5:30 AM'
+  "3k_fun": "7:00 AM",
+  "5k": "6:30 AM",
+  "15k": "5:30 AM",
 };
 
-async function sendTicketEmail(reg: RegistrationRecord, qrBuffer: Buffer): Promise<boolean> {
+async function sendTicketEmail(
+  reg: RegistrationRecord,
+  qrBuffer: Buffer
+): Promise<boolean> {
   const transporter = createTransporter();
-  const flagTime = categoryFlagTimes[reg.categoryId] || 'As per schedule';
+  const flagTime = categoryFlagTimes[reg.categoryId] || "As per schedule";
 
   const htmlBody = `
 <!DOCTYPE html>
@@ -425,20 +476,24 @@ async function sendTicketEmail(reg: RegistrationRecord, qrBuffer: Buffer): Promi
   <tr>
     <td style="padding:32px 24px 16px;background:linear-gradient(135deg,#FF7A30,#FFB347);text-align:center;">
       <h1 style="margin:0;color:#fff;font-size:36px;font-weight:900;letter-spacing:2px;text-transform:uppercase;">UDUPIPAGES</h1>
-      <p style="margin:4px 0 0;color:rgba(255,255,255,0.9);font-size:14px;font-weight:600;letter-spacing:4px;text-transform:uppercase;">BEACH RUN 2026</p>
+      <p style="margin:4px 0 0;color:rgba(255,255,255,0.9);font-size:14px;font-weight:600;letter-spacing:4px;text-transform:uppercase;">BEACH RUN 2027</p>
     </td>
   </tr>
   <tr>
     <td style="padding:24px;background:#111;">
       <p style="color:#FFB347;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin:0 0 4px;">PAYMENT CONFIRMED ✓</p>
-      <h2 style="margin:0 0 16px;color:#F5F3EE;font-size:24px;font-weight:900;">Hi ${reg.fullName}, you're in!</h2>
+      <h2 style="margin:0 0 16px;color:#F5F3EE;font-size:24px;font-weight:900;">Hi ${
+        reg.fullName
+      }, you're in!</h2>
       <p style="color:#aaa;font-size:14px;margin:0 0 24px;">Your registration is confirmed. Show the QR below at the gate on race day.</p>
 
       <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
         <tr>
           <td style="padding:12px;background:#1a1a1a;border-left:3px solid #FF7A30;">
             <p style="margin:0;color:#888;font-size:10px;text-transform:uppercase;letter-spacing:2px;">Category</p>
-            <p style="margin:4px 0 0;color:#F5F3EE;font-size:18px;font-weight:700;">${reg.categoryName}</p>
+            <p style="margin:4px 0 0;color:#F5F3EE;font-size:18px;font-weight:700;">${
+              reg.categoryName
+            }</p>
           </td>
           <td style="padding:12px;background:#1a1a1a;border-left:3px solid #FFB347;">
             <p style="margin:0;color:#888;font-size:10px;text-transform:uppercase;letter-spacing:2px;">Flag-Off Time</p>
@@ -448,11 +503,13 @@ async function sendTicketEmail(reg: RegistrationRecord, qrBuffer: Buffer): Promi
         <tr>
           <td style="padding:12px;background:#161616;border-left:3px solid #ccc;">
             <p style="margin:0;color:#888;font-size:10px;text-transform:uppercase;letter-spacing:2px;">Bib Number</p>
-            <p style="margin:4px 0 0;color:#FF7A30;font-size:28px;font-weight:900;">#${reg.bibNumber}</p>
+            <p style="margin:4px 0 0;color:#FF7A30;font-size:28px;font-weight:900;">#${
+              reg.bibNumber
+            }</p>
           </td>
           <td style="padding:12px;background:#161616;border-left:3px solid #555;">
             <p style="margin:0;color:#888;font-size:10px;text-transform:uppercase;letter-spacing:2px;">Date & Venue</p>
-            <p style="margin:4px 0 0;color:#F5F3EE;font-size:14px;font-weight:700;">10 Jan 2027<br>Padukere Ground, Udupi</p>
+            <p style="margin:4px 0 0;color:#F5F3EE;font-size:14px;font-weight:700;">10 January 2027<br>Padukere Ground, Udupi</p>
           </td>
         </tr>
       </table>
@@ -466,15 +523,21 @@ async function sendTicketEmail(reg: RegistrationRecord, qrBuffer: Buffer): Promi
       <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #333;margin-bottom:24px;">
         <tr><td style="padding:10px 12px;background:#1a1a1a;">
           <p style="margin:0;color:#666;font-size:10px;text-transform:uppercase;letter-spacing:1px;">Runner</p>
-          <p style="margin:4px 0 0;color:#F5F3EE;font-size:13px;font-weight:600;">${reg.fullName} · Age ${reg.age} · ${reg.tshirtSize} Tee</p>
+          <p style="margin:4px 0 0;color:#F5F3EE;font-size:13px;font-weight:600;">${
+            reg.fullName
+          } · Age ${reg.age} · ${reg.tshirtSize} Tee</p>
         </td></tr>
         <tr><td style="padding:10px 12px;background:#111;">
           <p style="margin:0;color:#666;font-size:10px;text-transform:uppercase;letter-spacing:1px;">Transaction ID</p>
-          <p style="margin:4px 0 0;color:#888;font-size:12px;font-family:monospace;">${reg.transactionId || reg.razorpayPaymentId || 'N/A'}</p>
+          <p style="margin:4px 0 0;color:#888;font-size:12px;font-family:monospace;">${
+            reg.transactionId || reg.razorpayPaymentId || "N/A"
+          }</p>
         </td></tr>
         <tr><td style="padding:10px 12px;background:#1a1a1a;">
           <p style="margin:0;color:#666;font-size:10px;text-transform:uppercase;letter-spacing:1px;">Emergency Contact</p>
-          <p style="margin:4px 0 0;color:#F5F3EE;font-size:13px;">${reg.emergencyContactName} · ${reg.emergencyContactPhone}</p>
+          <p style="margin:4px 0 0;color:#F5F3EE;font-size:13px;">${
+            reg.emergencyContactName
+          } · ${reg.emergencyContactPhone}</p>
         </td></tr>
       </table>
 
@@ -496,30 +559,37 @@ async function sendTicketEmail(reg: RegistrationRecord, qrBuffer: Buffer): Promi
 `;
 
   if (!transporter) {
-    console.warn('[Email] SMTP not configured. Logging ticket details to console.');
-    console.log(`\n📧 TICKET EMAIL (not sent — SMTP missing):\n  To: ${reg.email}\n  Name: ${reg.fullName}\n  Category: ${reg.categoryName}\n  Bib: #${reg.bibNumber}\n  QR Token: BR26.${reg.qrToken}\n  Ticket ID: ${reg.ticketId}\n`);
+    console.warn(
+      "[Email] SMTP not configured. Logging ticket details to console."
+    );
+    console.log(
+      `\n📧 TICKET EMAIL (not sent — SMTP missing):\n  To: ${reg.email}\n  Name: ${reg.fullName}\n  Category: ${reg.categoryName}\n  Bib: #${reg.bibNumber}\n  QR Token: BR26.${reg.qrToken}\n  Ticket ID: ${reg.ticketId}\n`
+    );
     return false;
   }
 
-  const from = process.env.MAIL_FROM || process.env.SMTP_USER || 'noreply@udupipagesbeachrun.com';
+  const from =
+    process.env.MAIL_FROM ||
+    process.env.SMTP_USER ||
+    "noreply@udupipagesbeachrun.com";
 
   try {
     await transporter.sendMail({
-      from: `"Udupipages Beach Run 2026" <${from}>`,
+      from: `"Udupipages Beach Run 2027" <${from}>`,
       to: reg.email,
       subject: `🏃 Your Beach Run Ticket — Bib #${reg.bibNumber} | ${reg.categoryName}`,
       html: htmlBody,
       attachments: [
         {
-          filename: `BeachRun2026_Ticket_Bib${reg.bibNumber}.png`,
+          filename: `BeachRun2027_Ticket_Bib${reg.bibNumber}.png`,
           content: qrBuffer,
-          cid: 'qr_ticket'
-        }
-      ]
+          cid: "qr_ticket",
+        },
+      ],
     });
     return true;
   } catch (err: any) {
-    console.error('[Email] Send failed:', err.message);
+    console.error("[Email] Send failed:", err.message);
     return false;
   }
 }
@@ -527,16 +597,18 @@ async function sendTicketEmail(reg: RegistrationRecord, qrBuffer: Buffer): Promi
 // ─── finalizeTicket ─────────────────────────────────────────────────────────
 // Runs ONCE per registration after payment confirmed (idempotent).
 
-export async function finalizeTicket(registrationId: string): Promise<RegistrationRecord | null> {
+export async function finalizeTicket(
+  registrationId: string
+): Promise<RegistrationRecord | null> {
   // Fetch registration
   let reg: RegistrationRecord | null = null;
 
   if (supabase) {
     try {
       const { data } = await supabase
-        .from('registrations')
-        .select('*')
-        .eq('id', registrationId)
+        .from("registrations")
+        .select("*")
+        .eq("id", registrationId)
         .single();
       if (data) reg = mapRow(data);
     } catch (_) {}
@@ -552,12 +624,14 @@ export async function finalizeTicket(registrationId: string): Promise<Registrati
 
   // Already finalized — idempotent
   if (reg.ticketId && reg.qrToken) {
-    console.log(`[finalizeTicket] Registration ${registrationId} already finalized. Skipping.`);
+    console.log(
+      `[finalizeTicket] Registration ${registrationId} already finalized. Skipping.`
+    );
     return reg;
   }
 
   const ticketId = randomUUID();
-  const qrToken = randomBytes(32).toString('hex'); // 256-bit
+  const qrToken = randomBytes(32).toString("hex"); // 256-bit
   const bibNumber = await assignBibNumber(reg.categoryId);
 
   // Generate QR PNG
@@ -565,7 +639,7 @@ export async function finalizeTicket(registrationId: string): Promise<Registrati
   try {
     qrBuffer = await generateQRBuffer(qrToken);
   } catch (e: any) {
-    console.error('[finalizeTicket] QR generation failed:', e.message);
+    console.error("[finalizeTicket] QR generation failed:", e.message);
     return null;
   }
 
@@ -576,21 +650,21 @@ export async function finalizeTicket(registrationId: string): Promise<Registrati
     qr_token: qrToken,
     bib_number: bibNumber,
     transaction_id: reg.transactionId || reg.razorpayPaymentId,
-    updated_at: now
+    updated_at: now,
   };
 
   if (supabase) {
     try {
       const { error } = await supabase
-        .from('registrations')
+        .from("registrations")
         .update(updatedFields)
-        .eq('id', registrationId)
-        .is('ticket_id', null); // only update if not already finalized
+        .eq("id", registrationId)
+        .is("ticket_id", null); // only update if not already finalized
       if (error) {
-        console.error('[finalizeTicket] DB update error:', error.message);
+        console.error("[finalizeTicket] DB update error:", error.message);
       }
     } catch (e: any) {
-      console.error('[finalizeTicket] DB update error:', e.message);
+      console.error("[finalizeTicket] DB update error:", e.message);
     }
   }
 
@@ -600,7 +674,8 @@ export async function finalizeTicket(registrationId: string): Promise<Registrati
     existing.ticketId = ticketId;
     existing.qrToken = qrToken;
     existing.bibNumber = bibNumber;
-    existing.transactionId = existing.transactionId || existing.razorpayPaymentId;
+    existing.transactionId =
+      existing.transactionId || existing.razorpayPaymentId;
     existing.updatedAt = now;
     inMemoryRegistrations.set(registrationId, existing);
   }
@@ -610,7 +685,7 @@ export async function finalizeTicket(registrationId: string): Promise<Registrati
     ticketId,
     qrToken,
     bibNumber,
-    transactionId: reg.transactionId || reg.razorpayPaymentId
+    transactionId: reg.transactionId || reg.razorpayPaymentId,
   };
 
   // Send email (with retry)
@@ -623,22 +698,25 @@ export async function finalizeTicket(registrationId: string): Promise<Registrati
       emailSent = await sendTicketEmail(updatedReg, qrBuffer);
       if (emailSent) break;
     } catch (e: any) {
-      console.warn(`[finalizeTicket] Email attempt ${attempt} failed:`, e.message);
-      if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 2000));
+      console.warn(
+        `[finalizeTicket] Email attempt ${attempt} failed:`,
+        e.message
+      );
+      if (attempt < 3) await new Promise((r) => setTimeout(r, attempt * 2000));
     }
   }
 
   // Update email status in DB
   if (supabase) {
     await supabase
-      .from('registrations')
+      .from("registrations")
       .update({
         email_sent: emailSent,
         email_sent_at: emailSent ? new Date().toISOString() : null,
         email_attempts: emailAttempts,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', registrationId);
+      .eq("id", registrationId);
   } else {
     const r = inMemoryRegistrations.get(registrationId);
     if (r) {
@@ -651,14 +729,15 @@ export async function finalizeTicket(registrationId: string): Promise<Registrati
   updatedReg.emailSent = emailSent;
   updatedReg.emailAttempts = emailAttempts;
 
-  console.log(`[finalizeTicket] ✅ Ticket finalized for ${reg.fullName} | Bib #${bibNumber} | Email sent: ${emailSent}`);
+  console.log(
+    `[finalizeTicket] ✅ Ticket finalized for ${reg.fullName} | Bib #${bibNumber} | Email sent: ${emailSent}`
+  );
   return updatedReg;
 }
 
 // ─── RegistrationService class ───────────────────────────────────────────────
 
 export class RegistrationService {
-
   /** Generate unique registration number */
   private static generateRegistrationNumber(): string {
     return generateRegistrationNumber();
@@ -696,19 +775,19 @@ export class RegistrationService {
       emergencyContactName: data.emergencyContactName,
       emergencyContactPhone: data.emergencyContactPhone,
       experience: data.experience,
-      paymentStatus: 'PENDING',
+      paymentStatus: "PENDING",
       amountINR: data.amountINR,
       razorpayOrderId: data.razorpayOrderId,
       emailSent: false,
       emailAttempts: 0,
       checkedIn: false,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     if (supabase) {
       try {
-        const { error } = await supabase.from('registrations').insert({
+        const { error } = await supabase.from("registrations").insert({
           id: record.id,
           registration_number: record.registrationNumber,
           full_name: record.fullName,
@@ -721,24 +800,32 @@ export class RegistrationService {
           emergency_contact_name: record.emergencyContactName,
           emergency_contact_phone: record.emergencyContactPhone,
           experience: record.experience,
-          payment_status: 'PENDING',
+          payment_status: "PENDING",
           amount_inr: record.amountINR,
           razorpay_order_id: record.razorpayOrderId,
           email_sent: false,
           email_attempts: 0,
           checked_in: false,
           created_at: now,
-          updated_at: now
+          updated_at: now,
         });
 
         if (error) {
-          console.error('[RegistrationService] Insert error, using in-memory:', error.message);
+          console.error(
+            "[RegistrationService] Insert error, using in-memory:",
+            error.message
+          );
           inMemoryRegistrations.set(record.id, record);
         } else {
-          console.log(`[RegistrationService] Created registration ${record.registrationNumber}`);
+          console.log(
+            `[RegistrationService] Created registration ${record.registrationNumber}`
+          );
         }
       } catch (err: any) {
-        console.error('[RegistrationService] Exception, using in-memory:', err.message);
+        console.error(
+          "[RegistrationService] Exception, using in-memory:",
+          err.message
+        );
         inMemoryRegistrations.set(record.id, record);
       }
     } else {
@@ -757,34 +844,42 @@ export class RegistrationService {
     if (supabase) {
       try {
         const { data, error } = await supabase
-          .from('registrations')
+          .from("registrations")
           .update({
-            payment_status: 'PAID',
+            payment_status: "PAID",
             razorpay_payment_id: razorpayPaymentId,
             razorpay_signature: razorpaySignature,
             transaction_id: razorpayPaymentId,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
-          .eq('razorpay_order_id', razorpayOrderId)
+          .eq("razorpay_order_id", razorpayOrderId)
           .select()
           .single();
 
         if (!error && data) {
           const reg = mapRow(data);
-          console.log(`[RegistrationService] Marked ${reg.registrationNumber} as PAID`);
+          console.log(
+            `[RegistrationService] Marked ${reg.registrationNumber} as PAID`
+          );
           return reg;
         } else if (error) {
-          console.warn('[RegistrationService] markAsPaid error:', error.message);
+          console.warn(
+            "[RegistrationService] markAsPaid error:",
+            error.message
+          );
         }
       } catch (err: any) {
-        console.error('[RegistrationService] markAsPaid exception:', err.message);
+        console.error(
+          "[RegistrationService] markAsPaid exception:",
+          err.message
+        );
       }
     }
 
     // In-memory fallback
     for (const [id, reg] of inMemoryRegistrations.entries()) {
       if (reg.razorpayOrderId === razorpayOrderId) {
-        reg.paymentStatus = 'PAID';
+        reg.paymentStatus = "PAID";
         reg.razorpayPaymentId = razorpayPaymentId;
         reg.transactionId = razorpayPaymentId;
         reg.updatedAt = new Date().toISOString();
@@ -796,13 +891,15 @@ export class RegistrationService {
   }
 
   /** Find registration by Razorpay order ID */
-  static async findByOrderId(razorpayOrderId: string): Promise<RegistrationRecord | null> {
+  static async findByOrderId(
+    razorpayOrderId: string
+  ): Promise<RegistrationRecord | null> {
     if (supabase) {
       try {
         const { data, error } = await supabase
-          .from('registrations')
-          .select('*')
-          .eq('razorpay_order_id', razorpayOrderId)
+          .from("registrations")
+          .select("*")
+          .eq("razorpay_order_id", razorpayOrderId)
           .single();
         if (!error && data) return mapRow(data);
       } catch (_) {}
@@ -818,9 +915,9 @@ export class RegistrationService {
     if (supabase) {
       try {
         const { data, error } = await supabase
-          .from('registrations')
-          .select('*')
-          .eq('id', id)
+          .from("registrations")
+          .select("*")
+          .eq("id", id)
           .single();
         if (!error && data) return mapRow(data);
       } catch (_) {}
@@ -829,18 +926,25 @@ export class RegistrationService {
   }
 
   /** Lookup by any identifier: id, ticketId, qrToken, paymentId, transactionId, registrationNumber, orderId */
-  static async lookupByAnyId(token: string): Promise<RegistrationRecord | null> {
+  static async lookupByAnyId(
+    token: string
+  ): Promise<RegistrationRecord | null> {
     const clean = token.trim();
     // Strip BR26. prefix if present
-    const qrContent = clean.startsWith('BR26.') ? clean.replace('BR26.', '') : null;
+    const qrContent = clean.startsWith("BR26.")
+      ? clean.replace("BR26.", "")
+      : null;
 
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clean);
+    const isUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        clean
+      );
     const orClauses: string[] = [
       `qr_token.eq.${qrContent || clean}`,
       `razorpay_payment_id.eq.${clean}`,
       `transaction_id.eq.${clean}`,
       `registration_number.eq.${clean}`,
-      `razorpay_order_id.eq.${clean}`
+      `razorpay_order_id.eq.${clean}`,
     ];
     if (isUuid) {
       orClauses.push(`id.eq.${clean}`, `ticket_id.eq.${clean}`);
@@ -849,13 +953,13 @@ export class RegistrationService {
     if (supabase) {
       try {
         const { data, error } = await supabase
-          .from('registrations')
-          .select('*')
-          .or(orClauses.join(','));
+          .from("registrations")
+          .select("*")
+          .or(orClauses.join(","));
 
         if (!error && data && data.length > 0) return mapRow(data[0]);
       } catch (e: any) {
-        console.warn('[RegistrationService] lookupByAnyId error:', e.message);
+        console.warn("[RegistrationService] lookupByAnyId error:", e.message);
         // Fall through to in-memory
       }
     }
@@ -882,10 +986,12 @@ export class RegistrationService {
   static async atomicCheckIn(
     token: string,
     adminId: string,
-    method: 'QR' | 'MANUAL'
+    method: "QR" | "MANUAL"
   ): Promise<CheckInResult> {
     const clean = token.trim();
-    const qrContent = clean.startsWith('BR26.') ? clean.replace('BR26.', '') : clean;
+    const qrContent = clean.startsWith("BR26.")
+      ? clean.replace("BR26.", "")
+      : clean;
 
     // Lookup the registration
     const reg = await this.lookupByAnyId(clean);
@@ -893,45 +999,57 @@ export class RegistrationService {
     // Log helper
     const logAttempt = async (
       registrationId: string | null,
-      result: CheckInResult['result']
+      result: CheckInResult["result"]
     ) => {
       if (supabase) {
-        await supabase.from('checkin_logs').insert({
-          id: randomUUID(),
-          registration_id: registrationId,
-          scanned_token: clean,
-          method,
-          result,
-          admin_id: adminId,
-          created_at: new Date().toISOString()
-        }).select();
+        await supabase
+          .from("checkin_logs")
+          .insert({
+            id: randomUUID(),
+            registration_id: registrationId,
+            scanned_token: clean,
+            method,
+            result,
+            admin_id: adminId,
+            created_at: new Date().toISOString(),
+          })
+          .select();
       }
-      console.log(`[CheckIn] ${result} | Token: ${clean.slice(0, 20)}... | Admin: ${adminId}`);
+      console.log(
+        `[CheckIn] ${result} | Token: ${clean.slice(
+          0,
+          20
+        )}... | Admin: ${adminId}`
+      );
     };
 
     if (!reg) {
-      await logAttempt(null, 'INVALID');
-      return { success: false, result: 'INVALID', message: 'No registration found for this token.' };
-    }
-
-    if (reg.paymentStatus !== 'PAID') {
-      await logAttempt(reg.id, 'UNPAID');
+      await logAttempt(null, "INVALID");
       return {
         success: false,
-        result: 'UNPAID',
+        result: "INVALID",
+        message: "No registration found for this token.",
+      };
+    }
+
+    if (reg.paymentStatus !== "PAID") {
+      await logAttempt(reg.id, "UNPAID");
+      return {
+        success: false,
+        result: "UNPAID",
         registration: reg,
-        message: `Payment not confirmed. Status: ${reg.paymentStatus}`
+        message: `Payment not confirmed. Status: ${reg.paymentStatus}`,
       };
     }
 
     if (reg.checkedIn) {
-      await logAttempt(reg.id, 'DUPLICATE');
+      await logAttempt(reg.id, "DUPLICATE");
       return {
         success: false,
-        result: 'DUPLICATE',
+        result: "DUPLICATE",
         registration: reg,
         message: `Runner already checked in at ${reg.checkedInAt}`,
-        firstCheckedInAt: reg.checkedInAt
+        firstCheckedInAt: reg.checkedInAt,
       };
     }
 
@@ -939,74 +1057,96 @@ export class RegistrationService {
     const checkedInAt = new Date().toISOString();
     if (supabase) {
       const { data, error } = await supabase
-        .from('registrations')
+        .from("registrations")
         .update({
           checked_in: true,
           checked_in_at: checkedInAt,
           checked_in_by: adminId,
-          updated_at: checkedInAt
+          updated_at: checkedInAt,
         })
-        .eq('id', reg.id)
-        .eq('checked_in', false) // atomic: only update if not already checked in
+        .eq("id", reg.id)
+        .eq("checked_in", false) // atomic: only update if not already checked in
         .select()
         .single();
 
       if (error || !data) {
         // Race condition — someone else checked in first
-        await logAttempt(reg.id, 'DUPLICATE');
+        await logAttempt(reg.id, "DUPLICATE");
         return {
           success: false,
-          result: 'DUPLICATE',
+          result: "DUPLICATE",
           registration: reg,
-          message: 'Runner was checked in by another device simultaneously.'
+          message: "Runner was checked in by another device simultaneously.",
         };
       }
 
       const updatedReg = mapRow(data);
-      await logAttempt(reg.id, 'SUCCESS');
-      return { success: true, result: 'SUCCESS', registration: updatedReg, message: 'Check-in successful!' };
+      await logAttempt(reg.id, "SUCCESS");
+      return {
+        success: true,
+        result: "SUCCESS",
+        registration: updatedReg,
+        message: "Check-in successful!",
+      };
     } else {
       // In-memory atomic check
       const existing = inMemoryRegistrations.get(reg.id);
       if (!existing || existing.checkedIn) {
-        await logAttempt(reg.id, 'DUPLICATE');
-        return { success: false, result: 'DUPLICATE', registration: reg, message: 'Already checked in.' };
+        await logAttempt(reg.id, "DUPLICATE");
+        return {
+          success: false,
+          result: "DUPLICATE",
+          registration: reg,
+          message: "Already checked in.",
+        };
       }
       existing.checkedIn = true;
       existing.checkedInAt = checkedInAt;
       existing.checkedInBy = adminId;
       inMemoryRegistrations.set(reg.id, existing);
-      await logAttempt(reg.id, 'SUCCESS');
-      return { success: true, result: 'SUCCESS', registration: existing, message: 'Check-in successful!' };
+      await logAttempt(reg.id, "SUCCESS");
+      return {
+        success: true,
+        result: "SUCCESS",
+        registration: existing,
+        message: "Check-in successful!",
+      };
     }
   }
 
   /** Get all registrations for admin */
   static async getAllRegistrations(): Promise<{
-    source: 'supabase' | 'in_memory';
+    source: "supabase" | "in_memory";
     registrations: RegistrationRecord[];
   }> {
     if (supabase) {
       try {
         const { data, error } = await supabase
-          .from('registrations')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .from("registrations")
+          .select("*")
+          .order("created_at", { ascending: false });
 
         if (!error && data) {
-          return { source: 'supabase', registrations: data.map(mapRow) };
+          return { source: "supabase", registrations: data.map(mapRow) };
         } else if (error) {
-          console.warn('[RegistrationService] getAllRegistrations error:', error.message);
+          console.warn(
+            "[RegistrationService] getAllRegistrations error:",
+            error.message
+          );
         }
       } catch (err: any) {
-        console.error('[RegistrationService] getAllRegistrations exception:', err.message);
+        console.error(
+          "[RegistrationService] getAllRegistrations exception:",
+          err.message
+        );
       }
     }
 
     const records = Array.from(inMemoryRegistrations.values()).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-    return { source: 'in_memory', registrations: records };
+    return { source: "in_memory", registrations: records };
   }
 
   /** Get check-in count */
@@ -1014,27 +1154,32 @@ export class RegistrationService {
     if (supabase) {
       try {
         const { count } = await supabase
-          .from('registrations')
-          .select('*', { count: 'exact', head: true })
-          .eq('checked_in', true)
-          .eq('payment_status', 'PAID');
+          .from("registrations")
+          .select("*", { count: "exact", head: true })
+          .eq("checked_in", true)
+          .eq("payment_status", "PAID");
         return count || 0;
       } catch (_) {}
     }
-    return Array.from(inMemoryRegistrations.values()).filter(r => r.checkedIn && r.paymentStatus === 'PAID').length;
+    return Array.from(inMemoryRegistrations.values()).filter(
+      (r) => r.checkedIn && r.paymentStatus === "PAID"
+    ).length;
   }
 
   /** Save screenshot URL to registration */
-  static async saveScreenshotUrl(registrationId: string, url: string): Promise<void> {
+  static async saveScreenshotUrl(
+    registrationId: string,
+    url: string
+  ): Promise<void> {
     if (supabase) {
       await supabase
-        .from('registrations')
+        .from("registrations")
         .update({
           payment_screenshot_url: url,
           screenshot_uploaded_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', registrationId);
+        .eq("id", registrationId);
     } else {
       const reg = inMemoryRegistrations.get(registrationId);
       if (reg) {
@@ -1052,16 +1197,16 @@ export class RegistrationService {
   ): Promise<RegistrationRecord | null> {
     if (supabase) {
       const { data, error } = await supabase
-        .from('registrations')
+        .from("registrations")
         .update({
-          payment_status: 'PAID',
+          payment_status: "PAID",
           manually_approved: true,
           manually_approved_by: adminId,
           manually_approved_at: new Date().toISOString(),
           admin_note: note,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', registrationId)
+        .eq("id", registrationId)
         .select()
         .single();
       if (!error && data) {
@@ -1072,7 +1217,7 @@ export class RegistrationService {
     } else {
       const reg = inMemoryRegistrations.get(registrationId);
       if (reg) {
-        reg.paymentStatus = 'PAID';
+        reg.paymentStatus = "PAID";
         reg.manuallyApproved = true;
         reg.adminNote = note;
         inMemoryRegistrations.set(registrationId, reg);
@@ -1098,7 +1243,7 @@ export class RegistrationService {
       emergencyContactPhone: string;
       experience?: string;
       bibNumber?: number | null;
-      paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
+      paymentStatus: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
       amountINR: number;
       checkedIn: boolean;
       adminNote?: string;
@@ -1107,20 +1252,34 @@ export class RegistrationService {
     const now = new Date().toISOString();
     const dbUpdates: any = { updated_at: now };
 
-    if (updates.fullName !== undefined) dbUpdates.full_name = updates.fullName.trim();
-    if (updates.email !== undefined) dbUpdates.email = updates.email.trim().toLowerCase();
+    if (updates.fullName !== undefined)
+      dbUpdates.full_name = updates.fullName.trim();
+    if (updates.email !== undefined)
+      dbUpdates.email = updates.email.trim().toLowerCase();
     if (updates.phone !== undefined) dbUpdates.phone = updates.phone.trim();
     if (updates.age !== undefined) dbUpdates.age = Number(updates.age);
-    if (updates.categoryId !== undefined) dbUpdates.category_id = updates.categoryId;
-    if (updates.categoryName !== undefined) dbUpdates.category_name = updates.categoryName;
-    if (updates.tshirtSize !== undefined) dbUpdates.tshirt_size = updates.tshirtSize;
-    if (updates.emergencyContactName !== undefined) dbUpdates.emergency_contact_name = updates.emergencyContactName;
-    if (updates.emergencyContactPhone !== undefined) dbUpdates.emergency_contact_phone = updates.emergencyContactPhone;
-    if (updates.experience !== undefined) dbUpdates.experience = updates.experience;
-    if (updates.bibNumber !== undefined) dbUpdates.bib_number = updates.bibNumber ? Number(updates.bibNumber) : null;
-    if (updates.paymentStatus !== undefined) dbUpdates.payment_status = updates.paymentStatus;
-    if (updates.amountINR !== undefined) dbUpdates.amount_inr = Number(updates.amountINR);
-    if (updates.adminNote !== undefined) dbUpdates.admin_note = updates.adminNote;
+    if (updates.categoryId !== undefined)
+      dbUpdates.category_id = updates.categoryId;
+    if (updates.categoryName !== undefined)
+      dbUpdates.category_name = updates.categoryName;
+    if (updates.tshirtSize !== undefined)
+      dbUpdates.tshirt_size = updates.tshirtSize;
+    if (updates.emergencyContactName !== undefined)
+      dbUpdates.emergency_contact_name = updates.emergencyContactName;
+    if (updates.emergencyContactPhone !== undefined)
+      dbUpdates.emergency_contact_phone = updates.emergencyContactPhone;
+    if (updates.experience !== undefined)
+      dbUpdates.experience = updates.experience;
+    if (updates.bibNumber !== undefined)
+      dbUpdates.bib_number = updates.bibNumber
+        ? Number(updates.bibNumber)
+        : null;
+    if (updates.paymentStatus !== undefined)
+      dbUpdates.payment_status = updates.paymentStatus;
+    if (updates.amountINR !== undefined)
+      dbUpdates.amount_inr = Number(updates.amountINR);
+    if (updates.adminNote !== undefined)
+      dbUpdates.admin_note = updates.adminNote;
     if (updates.checkedIn !== undefined) {
       dbUpdates.checked_in = Boolean(updates.checkedIn);
       if (updates.checkedIn) {
@@ -1134,9 +1293,9 @@ export class RegistrationService {
     if (supabase) {
       try {
         const { data, error } = await supabase
-          .from('registrations')
+          .from("registrations")
           .update(dbUpdates)
-          .eq('id', id)
+          .eq("id", id)
           .select()
           .single();
 
@@ -1145,10 +1304,16 @@ export class RegistrationService {
           inMemoryRegistrations.set(id, mapped);
           return mapped;
         } else if (error) {
-          console.error('[RegistrationService] updateRegistration error:', error.message);
+          console.error(
+            "[RegistrationService] updateRegistration error:",
+            error.message
+          );
         }
       } catch (err: any) {
-        console.error('[RegistrationService] updateRegistration exception:', err.message);
+        console.error(
+          "[RegistrationService] updateRegistration exception:",
+          err.message
+        );
       }
     }
 
@@ -1159,14 +1324,22 @@ export class RegistrationService {
       if (updates.phone !== undefined) reg.phone = updates.phone;
       if (updates.age !== undefined) reg.age = Number(updates.age);
       if (updates.categoryId !== undefined) reg.categoryId = updates.categoryId;
-      if (updates.categoryName !== undefined) reg.categoryName = updates.categoryName;
+      if (updates.categoryName !== undefined)
+        reg.categoryName = updates.categoryName;
       if (updates.tshirtSize !== undefined) reg.tshirtSize = updates.tshirtSize;
-      if (updates.emergencyContactName !== undefined) reg.emergencyContactName = updates.emergencyContactName;
-      if (updates.emergencyContactPhone !== undefined) reg.emergencyContactPhone = updates.emergencyContactPhone;
+      if (updates.emergencyContactName !== undefined)
+        reg.emergencyContactName = updates.emergencyContactName;
+      if (updates.emergencyContactPhone !== undefined)
+        reg.emergencyContactPhone = updates.emergencyContactPhone;
       if (updates.experience !== undefined) reg.experience = updates.experience;
-      if (updates.bibNumber !== undefined) reg.bibNumber = updates.bibNumber ? Number(updates.bibNumber) : undefined;
-      if (updates.paymentStatus !== undefined) reg.paymentStatus = updates.paymentStatus;
-      if (updates.amountINR !== undefined) reg.amountINR = Number(updates.amountINR);
+      if (updates.bibNumber !== undefined)
+        reg.bibNumber = updates.bibNumber
+          ? Number(updates.bibNumber)
+          : undefined;
+      if (updates.paymentStatus !== undefined)
+        reg.paymentStatus = updates.paymentStatus;
+      if (updates.amountINR !== undefined)
+        reg.amountINR = Number(updates.amountINR);
       if (updates.adminNote !== undefined) reg.adminNote = updates.adminNote;
       if (updates.checkedIn !== undefined) {
         reg.checkedIn = Boolean(updates.checkedIn);
@@ -1184,21 +1357,27 @@ export class RegistrationService {
     if (supabase) {
       try {
         // Also remove any check-in logs referencing this registration
-        await supabase.from('checkin_logs').delete().eq('registration_id', id);
+        await supabase.from("checkin_logs").delete().eq("registration_id", id);
 
         const { error } = await supabase
-          .from('registrations')
+          .from("registrations")
           .delete()
-          .eq('id', id);
+          .eq("id", id);
 
         if (!error) {
           inMemoryRegistrations.delete(id);
           return true;
         } else {
-          console.error('[RegistrationService] deleteRegistration error:', error.message);
+          console.error(
+            "[RegistrationService] deleteRegistration error:",
+            error.message
+          );
         }
       } catch (err: any) {
-        console.error('[RegistrationService] deleteRegistration exception:', err.message);
+        console.error(
+          "[RegistrationService] deleteRegistration exception:",
+          err.message
+        );
       }
     }
 
@@ -1212,21 +1391,21 @@ export class RegistrationService {
   /** Resend ticket email */
   static async resendTicketEmail(registrationId: string): Promise<boolean> {
     const reg = await this.findById(registrationId);
-    if (!reg || !reg.qrToken || reg.paymentStatus !== 'PAID') return false;
+    if (!reg || !reg.qrToken || reg.paymentStatus !== "PAID") return false;
 
     const qrBuffer = await generateQRBuffer(reg.qrToken);
     const sent = await sendTicketEmail(reg, qrBuffer);
 
     if (supabase) {
       await supabase
-        .from('registrations')
+        .from("registrations")
         .update({
           email_sent: sent,
           email_sent_at: sent ? new Date().toISOString() : undefined,
           email_attempts: (reg.emailAttempts || 0) + 1,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', registrationId);
+        .eq("id", registrationId);
     }
     return sent;
   }
@@ -1236,9 +1415,9 @@ export class RegistrationService {
     if (supabase) {
       try {
         const { data } = await supabase
-          .from('webhook_events')
-          .select('id')
-          .eq('razorpay_event_id', eventId)
+          .from("webhook_events")
+          .select("id")
+          .eq("razorpay_event_id", eventId)
           .single();
         return !!data;
       } catch (_) {}
@@ -1247,14 +1426,21 @@ export class RegistrationService {
   }
 
   /** Mark webhook as processed */
-  static async markWebhookProcessed(eventId: string, eventType: string, payload: any): Promise<void> {
+  static async markWebhookProcessed(
+    eventId: string,
+    eventType: string,
+    payload: any
+  ): Promise<void> {
     if (supabase) {
-      await supabase.from('webhook_events').insert({
-        razorpay_event_id: eventId,
-        event_type: eventType,
-        payload,
-        processed_at: new Date().toISOString()
-      }).select();
+      await supabase
+        .from("webhook_events")
+        .insert({
+          razorpay_event_id: eventId,
+          event_type: eventType,
+          payload,
+          processed_at: new Date().toISOString(),
+        })
+        .select();
     }
     inMemoryWebhookEvents.add(eventId);
   }
