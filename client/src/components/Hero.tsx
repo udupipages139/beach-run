@@ -104,7 +104,7 @@ export const Hero: React.FC = () => {
 
           <div className="line flex gap-[25px] flex-wrap font-extrabold text-[#10294f] text-[15px] my-[25px]">
             <span>📅 10th January 2027</span>
-            <span>📍 Malpe Padukere Beach, to Kaup Beach Udupi</span>
+            <span>📍 Malpe Padukere Ground</span>
           </div>
 
           <div className="actions flex gap-[15px] flex-wrap items-center">
